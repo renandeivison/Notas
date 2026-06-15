@@ -89,11 +89,11 @@
         <div id="task-view-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
             <div class="p-4 border-b border-gray-100 flex items-center bg-white flex-shrink-0">
                 <button onclick="closeTaskFullscreen()" class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24 stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     Voltar
                 </button>
             </div>
-            <div class="flex-1 custom-scroll p-4 max-w-3xl w-full mx-auto flex flex-col pb-36">
+            <div class="flex-1 custom-scroll p-4 max-w-3xl w-full mx-auto flex flex-col pb-12">
                 <div class="flex items-center gap-2 mt-1 mb-3">
                     <h3 id="fullscreen-task-title" class="text-lg font-bold text-gray-900 break-words leading-tight flex-1 cursor-pointer hover:text-amber-600 transition-colors" title="Clique para editar"></h3>
                     <button id="btn-edit-fs-main-title" class="p-1.5 text-gray-400 hover:text-amber-600 cursor-pointer bg-gray-50 rounded-lg transition-colors">
@@ -120,7 +120,7 @@
                     Voltar
                 </button>
             </div>
-            <div class="flex-1 custom-scroll p-6 max-w-3xl w-full mx-auto flex flex-col gap-4 pb-36">
+            <div class="flex-1 custom-scroll p-6 max-w-3xl w-full mx-auto flex flex-col gap-4 pb-12">
                 <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b border-gray-100 pb-2 text-base font-bold text-gray-800 bg-transparent focus:outline-none">
                 <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm text-gray-600 bg-transparent focus:outline-none"></textarea>
             </div>
@@ -180,20 +180,20 @@
             </div>
 
             <section id="section-tasks" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full">
-                <div class="flex-1 custom-scroll p-4 md:p-6 pb-36">
-                    <div id="tasks-container" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                <div class="flex-1 custom-scroll p-4 md:p-6 pb-12">
+                    <div id="tasks-container" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
 
             <section id="section-notes" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
-                <div class="flex-1 custom-scroll p-4 md:p-6 pb-36">
-                    <div id="notes-grid" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                <div class="flex-1 custom-scroll p-4 md:p-6 pb-12">
+                    <div id="notes-grid" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
 
             <section id="section-trash" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
-                <div class="flex-1 custom-scroll p-4 md:p-6 bg-gray-50/50 pb-36">
-                    <div id="trash-container" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                <div class="flex-1 custom-scroll p-4 md:p-6 bg-gray-50/50 pb-12">
+                    <div id="trash-container" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
 
@@ -453,6 +453,104 @@
             backdrop.classList.remove('flex');
         }
 
+        // --- DRAG AND DROP NATIVO ---
+        function setupDragAndDropContainer(containerId, typeTag, reorderCallback) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const draggable = document.querySelector('.dragging');
+                if (!draggable || draggable.dataset.type !== typeTag) return;
+                
+                const afterElement = getDragAfterElement(container, e.clientY, typeTag);
+                if (afterElement == null) {
+                    container.appendChild(draggable);
+                } else {
+                    container.insertBefore(draggable, afterElement);
+                }
+            });
+
+            container.addEventListener('drop', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const elements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]`)];
+                const newIdsOrder = elements.map(el => el.dataset.id);
+                reorderCallback(newIdsOrder);
+            });
+        }
+
+        function attachDragEvents(element) {
+            element.setAttribute('draggable', 'true');
+            element.addEventListener('dragstart', (e) => { 
+                closePopover(); 
+                element.classList.add('dragging'); 
+                e.dataTransfer.effectAllowed = 'move';
+                if(e.dataTransfer) e.dataTransfer.setData('text/plain', element.dataset.id); 
+                e.stopPropagation(); 
+            });
+            element.addEventListener('dragend', (e) => { 
+                element.classList.remove('dragging'); 
+                e.stopPropagation(); 
+            });
+        }
+
+        function getDragAfterElement(container, y, typeTag) {
+            const draggableElements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]:not(.dragging)`)];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+                else return closest;
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function reorderTasksArray(orderedIds) {
+            saveToUndoStack();
+            appState.tasks = orderedIds.map(id => appState.tasks.find(t => t.id === id)).filter(Boolean);
+            saveToLocalStorage();
+            renderTasks();
+        }
+        
+        function reorderNotesArray(orderedIds) {
+            saveToUndoStack();
+            appState.notes = orderedIds.map(id => appState.notes.find(n => n.id === id)).filter(Boolean);
+            saveToLocalStorage();
+            renderNotesList();
+        }
+        
+        function reorderFullscreenSubtasksArray(orderedIds) {
+            if (!currentFullscreenTaskId) return;
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
+            if(task) {
+                task.subtasks = orderedIds.map(id => task.subtasks.find(s => s.id === id)).filter(Boolean);
+                saveToLocalStorage();
+                renderTaskFullscreenContent(currentFullscreenTaskId);
+            }
+        }
+
+        function toggleTaskCompleted(taskId, event) {
+            if(event) event.stopPropagation();
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) { task.completed = !task.completed; saveToLocalStorage(); renderTasks(); }
+        }
+
+        function deleteTask(taskId, event) {
+            if(event) event.stopPropagation();
+            saveToUndoStack();
+            const taskIndex = appState.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                const removed = appState.tasks.splice(taskIndex, 1)[0];
+                appState.trash.push({ id: removed.id, type: 'task', title: removed.title, originalData: removed, deletedAt: new Date().toLocaleDateString('pt-BR') });
+            }
+            saveToLocalStorage();
+            renderTasks();
+            renderTrash();
+        }
+
         function exportBackup(event) {
             if(event) event.stopPropagation();
             closeBackupPopup();
@@ -551,104 +649,6 @@
             backdrop.classList.add('hidden');
             backdrop.classList.remove('flex');
             currentPopoverContext = null;
-        }
-
-        // --- DRAG AND DROP NATIVO ---
-        function setupDragAndDropContainer(containerId, typeTag, reorderCallback) {
-            const container = document.getElementById(containerId);
-            if(!container) return;
-
-            container.addEventListener('dragover', e => {
-                e.preventDefault();
-                e.stopPropagation();
-                const draggable = document.querySelector('.dragging');
-                if (!draggable || draggable.dataset.type !== typeTag) return;
-                
-                const afterElement = getDragAfterElement(container, e.clientY, typeTag);
-                if (afterElement == null) {
-                    container.appendChild(draggable);
-                } else {
-                    container.insertBefore(draggable, afterElement);
-                }
-            });
-
-            container.addEventListener('drop', e => {
-                e.preventDefault();
-                e.stopPropagation();
-                const elements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]`)];
-                const newIdsOrder = elements.map(el => el.dataset.id);
-                reorderCallback(newIdsOrder);
-            });
-        }
-
-        function attachDragEvents(element) {
-            element.setAttribute('draggable', 'true');
-            element.addEventListener('dragstart', (e) => { 
-                closePopover(); 
-                element.classList.add('dragging'); 
-                e.dataTransfer.effectAllowed = 'move';
-                if(e.dataTransfer) e.dataTransfer.setData('text/plain', element.dataset.id); 
-                e.stopPropagation(); 
-            });
-            element.addEventListener('dragend', (e) => { 
-                element.classList.remove('dragging'); 
-                e.stopPropagation(); 
-            });
-        }
-
-        function getDragAfterElement(container, y, typeTag) {
-            const draggableElements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]:not(.dragging)`)];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
-                else return closest;
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
-        }
-
-        function reorderTasksArray(orderedIds) {
-            saveToUndoStack();
-            appState.tasks = orderedIds.map(id => appState.tasks.find(t => t.id === id)).filter(Boolean);
-            saveToLocalStorage();
-            renderTasks();
-        }
-        
-        function reorderNotesArray(orderedIds) {
-            saveToUndoStack();
-            appState.notes = orderedIds.map(id => appState.notes.find(n => n.id === id)).filter(Boolean);
-            saveToLocalStorage();
-            renderNotesList();
-        }
-        
-        function reorderFullscreenSubtasksArray(orderedIds) {
-            if (!currentFullscreenTaskId) return;
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
-            if(task) {
-                task.subtasks = orderedIds.map(id => task.subtasks.find(s => s.id === id)).filter(Boolean);
-                saveToLocalStorage();
-                renderTaskFullscreenContent(currentFullscreenTaskId);
-            }
-        }
-
-        function toggleTaskCompleted(taskId, event) {
-            if(event) event.stopPropagation();
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === taskId);
-            if (task) { task.completed = !task.completed; saveToLocalStorage(); renderTasks(); }
-        }
-
-        function deleteTask(taskId, event) {
-            if(event) event.stopPropagation();
-            saveToUndoStack();
-            const taskIndex = appState.tasks.findIndex(t => t.id === taskId);
-            if (taskIndex !== -1) {
-                const removed = appState.tasks.splice(taskIndex, 1)[0];
-                appState.trash.push({ id: removed.id, type: 'task', title: removed.title, originalData: removed, deletedAt: new Date().toLocaleDateString('pt-BR') });
-            }
-            saveToLocalStorage();
-            renderTasks();
-            renderTrash();
         }
 
         // --- RENDERIZAÇÃO DAS TAREFAS ---
