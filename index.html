@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WunderNotes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23f59e0b' width='180' height='180'/><text x='90' y='120' font-size='100' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23f59e0b' width='192' height='192'/><text x='96' y='120' font-size='120' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
     <title>WunderNotes & Tasks v3.7</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
@@ -42,7 +49,7 @@
             <div id="global-edit-popover" class="bg-white border border-gray-200 rounded-xl shadow-2xl p-4 w-full max-w-sm transform scale-95 transition-transform duration-150">
                 <div class="flex flex-col gap-2">
                     <label class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Editar Item</label>
-                    <input type="text" id="popover-edit-input" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white text-gray-800 font-medium transition-all">
+                    <input type="text" id="popover-edit-input" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white">
                     <div class="flex justify-end gap-1.5 mt-2">
                         <button id="btn-popover-cancel" class="px-3 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-md transition-colors cursor-pointer">Cancelar</button>
                         <button id="btn-popover-save" class="px-4 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-md shadow-sm transition-colors cursor-pointer">Salvar</button>
@@ -59,8 +66,8 @@
                 </div>
                 <p class="text-xs text-gray-500 leading-relaxed">Faça o download das suas tarefas e notas, ou restaure o aplicativo a partir de um arquivo JSON salvo anteriormente.</p>
                 <div class="flex flex-col gap-2 mt-2">
-                    <button onclick="exportBackup(event)" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Fazer Backup</button>
-                    <button onclick="document.getElementById('backup-file-input').click()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Importar Backup</button>
+                    <button onclick="exportBackup(event)" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Fazer Download</button>
+                    <button onclick="document.getElementById('backup-file-input').click()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Restaurar Backup</button>
                 </div>
             </div>
         </div>
@@ -69,8 +76,8 @@
             <div class="flex-1 flex flex-col justify-start pt-20 max-w-xl w-full mx-auto p-6 space-y-6">
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">O que precisa ser feito?</label>
-                    <textarea id="input-fullscreen-create-task" placeholder="Primeira linha: Título da tarefa principal&#10;Próximas linhas: Subtarefas correspondentes" rows="6" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base focus:outline-none focus:border-amber-500 focus:bg-white transition-all font-medium resize-none"></textarea>
-                    <p class="text-[11px] text-gray-400">Dica: Cole um texto com várias quebras diárias de linha para criar a tarefa e seus subitens rapidamente.</p>
+                    <textarea id="input-fullscreen-create-task" placeholder="Primeira linha: Título da tarefa principal&#10;Próximas linhas: Subtarefas correspondentes" rows="6" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-500 focus:bg-white resize-none"></textarea>
+                    <p class="text-[11px] text-gray-400">Dica: Cole um texto com várias quebras de linha para criar a tarefa e seus subitens rapidamente.</p>
                 </div>
                 <div class="flex justify-end gap-3">
                     <button onclick="closeTaskCreateFullscreen()" class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
@@ -90,12 +97,12 @@
                 <div class="flex items-center gap-2 mt-1 mb-3">
                     <h3 id="fullscreen-task-title" class="text-lg font-bold text-gray-900 break-words leading-tight flex-1 cursor-pointer hover:text-amber-600 transition-colors" title="Clique para editar"></h3>
                     <button id="btn-edit-fs-main-title" class="p-1.5 text-gray-400 hover:text-amber-600 cursor-pointer bg-gray-50 rounded-lg transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6m0 0l6 6M3 21h18"></path></svg>
                     </button>
                 </div>
                 <div class="border-t border-gray-100 pt-3 flex flex-col">
                     <div class="relative mb-3">
-                        <input type="text" id="input-fullscreen-subtask" placeholder="Adicionar subitem à lista..." class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white transition-all font-medium">
+                        <input type="text" id="input-fullscreen-subtask" placeholder="Adicionar subitem à lista..." class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white">
                         <button id="btn-add-fullscreen-subtask" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                         </button>
@@ -114,30 +121,30 @@
                 </button>
             </div>
             <div class="flex-1 custom-scroll p-6 max-w-3xl w-full mx-auto flex flex-col gap-4 pb-36">
-                <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b border-gray-100 pb-2 text-base font-bold text-gray-900 focus:outline-none focus:border-amber-500">
-                <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm text-gray-600 focus:outline-none leading-relaxed custom-scroll"></textarea>
+                <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b border-gray-100 pb-2 text-base font-bold text-gray-800 bg-transparent focus:outline-none">
+                <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm text-gray-600 bg-transparent focus:outline-none"></textarea>
             </div>
         </div>
 
-        <aside id="sidebar" class="absolute top-0 bottom-0 left-0 w-28 bg-[#0f172a] text-gray-300 flex flex-col items-center justify-between flex-shrink-0 z-40 transform -translate-x-full transition-transform duration-200 ease-in-out border-r border-slate-900/20">
+        <aside id="sidebar" class="absolute top-0 bottom-0 left-0 w-28 bg-[#0f172a] text-gray-300 flex flex-col items-center justify-between flex-shrink-0 z-40 transform -translate-x-full transition-transform duration-200 md:static md:translate-x-0">
             <div class="w-full flex flex-col items-center flex-1">
                 <nav class="w-full px-2 pt-4 space-y-3">
                     <button id="btn-tasks" onclick="switchTab('tasks')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 bg-amber-500 text-white shadow-sm cursor-pointer">
-                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         <span class="text-[11px] font-medium tracking-wide block">Tarefas</span>
                     </button>
                     
-                    <button id="btn-notes" onclick="switchTab('notes')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200 cursor-pointer">
+                    <button id="btn-notes" onclick="switchTab('notes')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
                         <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         <span class="text-[11px] font-medium tracking-wide block">Notas</span>
                     </button>
 
-                    <button id="btn-trash" onclick="switchTab('trash')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200 cursor-pointer">
-                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16"></path></svg>
+                    <button id="btn-trash" onclick="switchTab('trash')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         <span class="text-[11px] font-medium tracking-wide block">Lixeira</span>
                     </button>
 
-                    <button id="btn-backup" onclick="openBackupPopup()" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200 cursor-pointer">
+                    <button id="btn-backup" onclick="openBackupPopup()" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
                         <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
                         <span class="text-[11px] font-medium tracking-wide block">Backup</span>
                     </button>
@@ -163,7 +170,7 @@
                     <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </span>
-                    <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="w-full bg-gray-100 text-xs border border-transparent rounded-xl pl-9 pr-4 py-2.5 focus:outline-none focus:bg-white focus:border-gray-300 transition-all font-medium text-gray-700">
+                    <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="w-full bg-gray-100 text-xs border border-transparent rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:bg-white focus:border-amber-300">
                 </div>
 
                 <button id="btn-header-action" onclick="handleHeaderActionClick()" class="flex items-center gap-1.5 px-3.5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer flex-shrink-0">
@@ -204,6 +211,15 @@
     </div>
 
     <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').then(reg => {
+                console.log('Service Worker registrado com sucesso:', reg);
+            }).catch(err => {
+                console.log('Erro ao registrar Service Worker:', err);
+            });
+        }
+
         // v3.7 
         let appState = { tasks: [], notes: [], trash: [], activeNoteId: null, activeTaskId: null };
         let undoStack = [];
@@ -236,6 +252,21 @@
                 if (e.target.id === 'backup-modal-backdrop') closeBackupPopup();
             });
         });
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('wundernotes_appState');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch (e) {
+                    console.log('Erro ao carregar dados:', e);
+                }
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('wundernotes_appState', JSON.stringify(appState));
+        }
 
         function saveToUndoStack(explicitState) {
             const targetState = explicitState || appState;
@@ -288,7 +319,7 @@
             secNotes.classList.add('hidden');
             secTrash.classList.add('hidden');
 
-            const inactiveClass = "w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200 cursor-pointer";
+            const inactiveClass = "w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200";
             const activeClass = "w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 bg-amber-500 text-white shadow-sm cursor-pointer";
 
             btnTasks.className = inactiveClass;
@@ -314,7 +345,7 @@
                 secTrash.classList.remove('hidden');
                 txtAction.innerText = "Limpar Lixeira";
                 btnAction.classList.add('bg-red-500', 'hover:bg-red-600');
-                iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16"></path>`;
+                iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>`;
                 searchInput.placeholder = "Pesquisar excluídos...";
                 btnTrash.className = activeClass;
             }
@@ -617,170 +648,6 @@
             renderTrash();
         }
 
-        // --- TELA EXCLUSIVA PARA SUBTAREFAS ---
-        function openTaskFullscreen(taskId) {
-            currentFullscreenTaskId = taskId;
-            const task = appState.tasks.find(t => t.id === taskId);
-            if(task && task.isRestored) {
-                delete task.isRestored;
-                saveToLocalStorage();
-                renderTasks();
-            }
-            document.getElementById('task-view-fullscreen').classList.remove('hidden');
-            renderTaskFullscreenContent(taskId);
-        }
-
-        function closeTaskFullscreen() {
-            currentFullscreenTaskId = null;
-            document.getElementById('task-view-fullscreen').classList.add('hidden');
-            renderTasks();
-        }
-
-        function renderTaskFullscreenContent(taskId) {
-            const task = appState.tasks.find(t => t.id === taskId);
-            if(!task) { closeTaskFullscreen(); return; }
-            if(!task.trashSubtasks) task.trashSubtasks = [];
-
-            const titleEl = document.getElementById('fullscreen-task-title');
-            titleEl.innerText = task.title;
-            
-            const bindTitleEdit = () => {
-                const tempEl = document.createElement('div');
-                tempEl.innerText = task.title; 
-                openPopover(titleEl, tempEl, 'task', task.id);
-            };
-            titleEl.onclick = bindTitleEdit;
-            document.getElementById('btn-edit-fs-main-title').onclick = bindTitleEdit;
-
-            const container = document.getElementById('fullscreen-subtasks-container');
-            container.innerHTML = '';
-
-            if (task.subtasks.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium">Nenhum subitem ativo.</div>`;
-            } else {
-                task.subtasks.forEach(sub => {
-                    const row = document.createElement('div');
-                    row.className = `flex items-center justify-between p-3 border border-gray-200 rounded-xl gap-2 select-none transition-colors cursor-grab active:cursor-grabbing ${sub.completed ? 'bg-gray-100 opacity-90' : 'bg-white hover:bg-gray-50'}`;
-                    row.dataset.id = sub.id; row.dataset.type = 'subtask';
-
-                    row.innerHTML = `
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onclick="toggleFullscreenSubtask('${task.id}', '${sub.id}')" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer flex-shrink-0">
-                            <span class="text-xs font-semibold text-gray-700 break-words flex-1 min-w-0 editable-subfullscreen-txt ${sub.completed ? 'line-through text-gray-400 font-normal' : ''}">${sub.title}</span>
-                        </div>
-                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
-                            <button class="btn-edit-fs-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                            </button>
-                            <button onclick="deleteFullscreenSubtask('${task.id}', '${sub.id}')" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    `;
-
-                    attachDragEvents(row);
-                    row.querySelector('.btn-edit-fs-pencil').addEventListener('click', () => {
-                        openPopover(row.querySelector('.btn-edit-fs-pencil'), row.querySelector('.editable-subfullscreen-txt'), 'subtask', task.id, sub.id);
-                    });
-
-                    container.appendChild(row);
-                });
-            }
-
-            const trashWrapper = document.getElementById('fullscreen-trash-subtasks-wrapper');
-            trashWrapper.innerHTML = '';
-            
-            if (task.trashSubtasks && task.trashSubtasks.length > 0) {
-                let trashItemsHtml = task.trashSubtasks.map(ts => `
-                    <div class="flex items-center justify-between p-2.5 border border-red-100 bg-red-50/30 rounded-xl gap-2">
-                        <span class="text-[11px] font-semibold text-gray-400 line-through truncate">${ts.title}</span>
-                        <div class="flex gap-1.5 flex-shrink-0">
-                            <button onclick="restoreFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded cursor-pointer transition-colors hover:bg-emerald-200">Restaurar</button>
-                            <button onclick="permDeleteFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-red-100 text-red-600 rounded cursor-pointer transition-colors hover:bg-red-200">Excluir</button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                trashWrapper.innerHTML = `
-                    <div class="mt-8 border-t border-gray-100 pt-4">
-                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Subitens Excluídos</h4>
-                        <div class="space-y-1.5">${trashItemsHtml}</div>
-                    </div>
-                `;
-            }
-        }
-
-        function addFullscreenSubtask() {
-            if(!currentFullscreenTaskId) return;
-            const input = document.getElementById('input-fullscreen-subtask');
-            const title = input.value.trim();
-            if(!title) return;
-
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
-            if(task) {
-                task.subtasks.push({ id: Date.now().toString(), title: title, completed: false });
-                saveToLocalStorage();
-                renderTaskFullscreenContent(currentFullscreenTaskId);
-                input.value = '';
-                input.focus();
-            }
-        }
-
-        function toggleFullscreenSubtask(taskId, subtaskId) {
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === taskId);
-            if (task) {
-                const sub = task.subtasks.find(s => s.id === subtaskId);
-                if (sub) sub.completed = !sub.completed;
-                saveToLocalStorage();
-                renderTaskFullscreenContent(taskId);
-            }
-        }
-
-        function deleteFullscreenSubtask(taskId, subtaskId) {
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === taskId);
-            if (task) {
-                if(!task.trashSubtasks) task.trashSubtasks = [];
-                const subIndex = task.subtasks.findIndex(s => s.id === subtaskId);
-                if (subIndex !== -1) {
-                    const sub = task.subtasks[subIndex];
-                    sub.originalIndex = subIndex; 
-                    task.trashSubtasks.push(sub);
-                    task.subtasks.splice(subIndex, 1);
-                }
-                saveToLocalStorage();
-                renderTaskFullscreenContent(taskId);
-            }
-        }
-
-        function restoreFullscreenSubtask(taskId, subtaskId) {
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === taskId);
-            if(task && task.trashSubtasks) {
-                const subIndex = task.trashSubtasks.findIndex(s => s.id === subtaskId);
-                if(subIndex !== -1) {
-                    const sub = task.trashSubtasks.splice(subIndex, 1)[0];
-                    const targetIndex = (sub.originalIndex !== undefined && sub.originalIndex <= task.subtasks.length) ? sub.originalIndex : task.subtasks.length;
-                    task.subtasks.splice(targetIndex, 0, sub);
-                    delete sub.originalIndex; 
-                    saveToLocalStorage();
-                    renderTaskFullscreenContent(taskId);
-                }
-            }
-        }
-
-        function permDeleteFullscreenSubtask(taskId, subtaskId) {
-            saveToUndoStack();
-            const task = appState.tasks.find(t => t.id === taskId);
-            if(task && task.trashSubtasks) {
-                task.trashSubtasks = task.trashSubtasks.filter(s => s.id !== subtaskId);
-                saveToLocalStorage();
-                renderTaskFullscreenContent(taskId);
-            }
-        }
-
         // --- RENDERIZAÇÃO DAS TAREFAS ---
         function renderTasks() {
             const container = document.getElementById('tasks-container');
@@ -801,7 +668,7 @@
 
             filteredTasks.forEach(task => {
                 const card = document.createElement('div');
-                card.className = `border shadow-sm rounded-xl overflow-hidden flex flex-col transition-all cursor-pointer ${task.completed ? 'bg-gray-50 border-gray-100 opacity-90' : 'bg-white border-gray-200 hover:shadow-md'}`;
+                card.className = `border shadow-sm rounded-xl overflow-hidden flex flex-col transition-all cursor-pointer ${task.completed ? 'bg-gray-50 border-gray-100 opacity-90' : 'bg-white border-amber-100 hover:border-amber-300'}`;
                 card.dataset.id = task.id; card.dataset.type = 'task';
 
                 let dropdownHtml = '';
@@ -831,7 +698,7 @@
                 card.innerHTML = `
                     <div class="flex items-center justify-between p-3.5 gap-3">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTaskCompleted('${task.id}', event)" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer flex-shrink-0">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTaskCompleted('${task.id}', event)" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer">
                             
                             <div class="flex items-center flex-1 min-w-0 gap-1 select-none">
                                 <span class="text-sm font-bold text-gray-800 truncate ${task.completed ? 'line-through text-gray-400 font-normal' : ''}">${task.title}</span>
@@ -841,9 +708,9 @@
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
                             <button class="btn-edit-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6m0 0l6 6M3 21h18"></path></svg>
                             </button>
-                            <button onclick="deleteTask('${task.id}', event)" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16"></path></svg></button>
+                            <button onclick="deleteTask('${task.id}', event)" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                         </div>
                     </div>
                     ${dropdownHtml}
@@ -886,7 +753,7 @@
             filteredNotes.forEach(note => {
                 const card = document.createElement('div');
                 const isAct = note.id === appState.activeNoteId;
-                card.className = `p-4 rounded-xl border shadow-sm transition-all relative cursor-pointer ${isAct ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50 hover:shadow-md'}`;
+                card.className = `p-4 rounded-xl border shadow-sm transition-all relative cursor-pointer ${isAct ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-amber-200'}`;
                 card.dataset.id = note.id; card.dataset.type = 'note';
                 
                 const restoredTag = note.isRestored ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700 ml-2 shadow-sm flex-shrink-0">Restaurada</span>` : '';
@@ -903,10 +770,10 @@
                     </div>
                     <div class="absolute right-2 top-2.5 flex items-center gap-0.5">
                         <button class="btn-edit-note-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar Título">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6m0 0l6 6M3 21h18"></path></svg>
                         </button>
                         <button onclick="deleteNoteDirectly('${note.id}', event)" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-16v1a3 3 0 003 3h10M4 7h16"></path></svg>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </div>
                 `;
@@ -1000,76 +867,74 @@
             updateHistoryButtons();
         }
 
-        // --- SISTEMA DE LIXEIRA ---
+        // --- RENDERIZAÇÃO DA LIXEIRA ---
         function renderTrash() {
             const container = document.getElementById('trash-container');
             if(!container) return;
             container.innerHTML = '';
-
+            
             const filteredTrash = appState.trash.filter(item => {
                 if (!searchQuery) return true;
                 return item.title.toLowerCase().includes(searchQuery);
             });
 
-            if (filteredTrash.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Lixeira vazia.</div>`;
-                return;
+            if (filteredTrash.length === 0) { 
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Lixeira vazia.</div>`; 
+                return; 
             }
 
             filteredTrash.forEach(item => {
                 const card = document.createElement('div');
-                card.className = "bg-white border border-gray-200 shadow-sm rounded-xl p-3 flex items-center justify-between gap-3";
+                card.className = 'p-3.5 border border-red-100 bg-red-50/30 rounded-xl shadow-sm flex items-center justify-between gap-3';
                 
-                const typeLabel = item.type === 'task' ? 'Tarefa' : 'Nota';
-                const typeColor = item.type === 'task' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700';
-
                 card.innerHTML = `
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${typeColor}">${typeLabel}</span>
-                            <span class="text-[10px] text-gray-400 font-medium">Apagado em: ${item.deletedAt}</span>
-                        </div>
-                        <h4 class="text-sm font-semibold text-gray-800 truncate">${item.title || 'Sem título'}</h4>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-600 truncate">${item.title}</p>
+                        <p class="text-xs text-gray-400">Excluído em ${item.deletedAt}</p>
                     </div>
-                    <div class="flex items-center gap-1 flex-shrink-0">
-                        <button onclick="restoreItem('${item.id}')" class="px-2.5 py-1.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition-colors cursor-pointer">
-                            Restaurar
-                        </button>
-                        <button onclick="permanentlyDeleteItem('${item.id}')" class="px-2.5 py-1.5 text-[10px] font-bold bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition-colors cursor-pointer">
-                            Excluir
-                        </button>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="restoreFromTrash('${item.id}')" class="px-3 py-1.5 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors cursor-pointer">Restaurar</button>
+                        <button onclick="permDeleteFromTrash('${item.id}')" class="px-3 py-1.5 text-xs font-bold bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors cursor-pointer">Deletar</button>
                     </div>
                 `;
+
                 container.appendChild(card);
             });
         }
 
-        function restoreItem(id) {
+        function restoreFromTrash(itemId) {
             saveToUndoStack();
-            const idx = appState.trash.findIndex(i => i.id === id);
-            if(idx !== -1) {
-                const item = appState.trash.splice(idx, 1)[0];
-                item.originalData.isRestored = true; 
-                if(item.type === 'task') {
+            const trashIndex = appState.trash.findIndex(i => i.id === itemId);
+            if (trashIndex !== -1) {
+                const item = appState.trash.splice(trashIndex, 1)[0];
+                item.isRestored = true;
+                
+                if (item.type === 'task') {
                     appState.tasks.unshift(item.originalData);
-                } else if(item.type === 'note') {
+                } else if (item.type === 'note') {
                     appState.notes.unshift(item.originalData);
                 }
             }
             saveToLocalStorage();
-            applyStateToUI();
+            renderTrash();
+            renderTasks();
+            renderNotesList();
         }
 
-        function permanentlyDeleteItem(id) {
+        function permDeleteFromTrash(itemId) {
             saveToUndoStack();
-            appState.trash = appState.trash.filter(i => i.id !== id);
+            appState.trash = appState.trash.filter(i => i.id !== itemId);
             saveToLocalStorage();
             renderTrash();
         }
 
         function emptyTrash() {
-            if(appState.trash.length === 0) return;
-            if(confirm("Tem certeza que deseja limpar a lixeira? Os itens serão perdidos permanentemente.")) {
+            if (appState.trash.length === 0) {
+                alert('Lixeira já está vazia!');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja limpar toda a lixeira? Esta ação não pode ser desfeita.')) {
                 saveToUndoStack();
                 appState.trash = [];
                 saveToLocalStorage();
@@ -1077,28 +942,167 @@
             }
         }
 
-        function saveToLocalStorage() { localStorage.setItem('wunder_v3.7_data', JSON.stringify(appState)); }
-        
-        function loadFromLocalStorage() {
-            const data = localStorage.getItem('wunder_v3.7_data');
-            if (data) {
-                appState = JSON.parse(data);
-                if(!appState.trash) appState.trash = [];
-                appState.tasks.forEach(t => { if(!t.trashSubtasks) t.trashSubtasks = []; });
+        // --- TELA EXCLUSIVA PARA SUBTAREFAS ---
+        function openTaskFullscreen(taskId) {
+            currentFullscreenTaskId = taskId;
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.isRestored) {
+                delete task.isRestored;
+                saveToLocalStorage();
+                renderTasks();
+            }
+            document.getElementById('task-view-fullscreen').classList.remove('hidden');
+            renderTaskFullscreenContent(taskId);
+        }
+
+        function closeTaskFullscreen() {
+            currentFullscreenTaskId = null;
+            document.getElementById('task-view-fullscreen').classList.add('hidden');
+            renderTasks();
+        }
+
+        function renderTaskFullscreenContent(taskId) {
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(!task) { closeTaskFullscreen(); return; }
+            if(!task.trashSubtasks) task.trashSubtasks = [];
+
+            const titleEl = document.getElementById('fullscreen-task-title');
+            titleEl.innerText = task.title;
+            
+            const bindTitleEdit = () => {
+                const tempEl = document.createElement('div');
+                tempEl.innerText = task.title; 
+                openPopover(titleEl, tempEl, 'task', task.id);
+            };
+            titleEl.onclick = bindTitleEdit;
+            document.getElementById('btn-edit-fs-main-title').onclick = bindTitleEdit;
+
+            const container = document.getElementById('fullscreen-subtasks-container');
+            container.innerHTML = '';
+
+            if (task.subtasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium">Nenhum subitem ativo.</div>`;
             } else {
-                appState = {
-                    tasks: [
-                        { id: 't1', title: 'Comprar suprimentos e materiais de escritório', completed: false, subtasks: [{ id: 's1-1', title: 'Papel A4 Resma', completed: true }, { id: 's1-2', title: 'Canetas pretas e azuis', completed: false }], trashSubtasks: [] },
-                        { id: 't2', title: 'Ligar para a equipe de engenharia elétrica', completed: true, subtasks: [], trashSubtasks: [] },
-                        { id: 't3', title: 'Planejar roteiro da viagem de férias', completed: false, subtasks: [{ id: 's4-3', title: 'Comprar passagens aéreas', completed: true }, { id: 's4-4', title: 'Fazer malas', completed: false }], trashSubtasks: [] },
-                    ],
-                    notes: [
-                        { id: 'n1', title: 'Ideias de Negócios de Software', content: 'Criar uma plataforma SaaS voltada para micro-empreendedores.', updatedAt: '15/06/2026' },
-                        { id: 'n2', title: 'Lista de Compras Supermercado', content: 'Café expresso grãos, leite de amêndoas, peito de frango.', updatedAt: '15/06/2026' },
-                    ],
-                    trash: [],
-                    activeNoteId: null, activeTaskId: null
-                };
+                task.subtasks.forEach(sub => {
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between p-3 border border-gray-200 rounded-xl gap-2 select-none transition-colors cursor-grab active:cursor-grabbing ${sub.completed ? 'bg-gray-50 opacity-75' : 'bg-white hover:bg-amber-50'}`;
+                    row.dataset.id = sub.id; row.dataset.type = 'subtask';
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onclick="toggleFullscreenSubtask('${task.id}', '${sub.id}')" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer">
+                            <span class="text-xs font-semibold text-gray-700 break-words flex-1 min-w-0 editable-subfullscreen-txt ${sub.completed ? 'line-through text-gray-400 font-normal' : ''}">${sub.title}</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                            <button class="btn-edit-fs-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6-6m0 0l6 6M3 21h18"></path></svg>
+                            </button>
+                            <button onclick="deleteFullscreenSubtask('${task.id}', '${sub.id}')" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+
+                    attachDragEvents(row);
+                    row.querySelector('.btn-edit-fs-pencil').addEventListener('click', () => {
+                        openPopover(row.querySelector('.btn-edit-fs-pencil'), row.querySelector('.editable-subfullscreen-txt'), 'subtask', task.id, sub.id);
+                    });
+
+                    container.appendChild(row);
+                });
+            }
+
+            const trashWrapper = document.getElementById('fullscreen-trash-subtasks-wrapper');
+            trashWrapper.innerHTML = '';
+            
+            if (task.trashSubtasks && task.trashSubtasks.length > 0) {
+                let trashItemsHtml = task.trashSubtasks.map(ts => `
+                    <div class="flex items-center justify-between p-2.5 border border-red-100 bg-red-50/30 rounded-xl gap-2">
+                        <span class="text-[11px] font-semibold text-gray-400 line-through truncate">${ts.title}</span>
+                        <div class="flex gap-1.5 flex-shrink-0">
+                            <button onclick="restoreFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded cursor-pointer transition-colors hover:bg-emerald-200">Restaurar</button>
+                            <button onclick="permDeleteFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-red-100 text-red-600 rounded cursor-pointer transition-colors hover:bg-red-200">Deletar</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                trashWrapper.innerHTML = `
+                    <div class="mt-8 border-t border-gray-100 pt-4">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Subitens Excluídos</h4>
+                        <div class="space-y-1.5">${trashItemsHtml}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function addFullscreenSubtask() {
+            if(!currentFullscreenTaskId) return;
+            const input = document.getElementById('input-fullscreen-subtask');
+            const title = input.value.trim();
+            if(!title) return;
+
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
+            if(task) {
+                task.subtasks.push({ id: Date.now().toString(), title: title, completed: false });
+                saveToLocalStorage();
+                renderTaskFullscreenContent(currentFullscreenTaskId);
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function toggleFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) {
+                const sub = task.subtasks.find(s => s.id === subtaskId);
+                if (sub) sub.completed = !sub.completed;
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
+            }
+        }
+
+        function deleteFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) {
+                if(!task.trashSubtasks) task.trashSubtasks = [];
+                const subIndex = task.subtasks.findIndex(s => s.id === subtaskId);
+                if (subIndex !== -1) {
+                    const sub = task.subtasks[subIndex];
+                    sub.originalIndex = subIndex; 
+                    task.trashSubtasks.push(sub);
+                    task.subtasks.splice(subIndex, 1);
+                }
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
+            }
+        }
+
+        function restoreFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.trashSubtasks) {
+                const subIndex = task.trashSubtasks.findIndex(s => s.id === subtaskId);
+                if(subIndex !== -1) {
+                    const sub = task.trashSubtasks.splice(subIndex, 1)[0];
+                    const targetIndex = (sub.originalIndex !== undefined && sub.originalIndex <= task.subtasks.length) ? sub.originalIndex : task.subtasks.length;
+                    task.subtasks.splice(targetIndex, 0, sub);
+                    delete sub.originalIndex; 
+                    saveToLocalStorage();
+                    renderTaskFullscreenContent(taskId);
+                }
+            }
+        }
+
+        function permDeleteFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.trashSubtasks) {
+                task.trashSubtasks = task.trashSubtasks.filter(s => s.id !== subtaskId);
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
             }
         }
     </script>
