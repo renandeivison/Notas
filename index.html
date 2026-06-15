@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WunderNotes">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23f59e0b' width='180' height='180'/><text x='90' y='120' font-size='100' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23f59e0b' width='192' height='192'/><text x='96' y='120' font-size='120' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
+    <title>WunderNotes & Tasks v3.7</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+        }
+        .custom-scroll {
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0,0,0,0.15) transparent;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.15);
+            border-radius: 4px;
+        }
+        .dragging {
+            opacity: 0.4;
+            border-style: dashed !important;
+            border-color: #f59e0b !important;
+            background-color: #fef3c7 !important;
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex items-center justify-center m-0 p-0 md:p-4 overflow-hidden select-none">
+
+    <input type="file" id="backup-file-input" accept=".json" onchange="importBackup(event)" class="hidden">
+
+    <div class="w-full h-full md:max-w-6xl md:h-[90vh] bg-white text-gray-800 md:rounded-2xl shadow-2xl flex overflow-hidden relative">
+        
+        <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="absolute inset-0 bg-black/40 z-30 hidden transition-opacity duration-200 opacity-0"></div>
+
+        <div id="global-edit-backdrop" class="fixed inset-0 bg-black/40 z-[60] hidden items-start justify-center pt-24 p-4">
+            <div id="global-edit-popover" class="bg-white border border-gray-200 rounded-xl shadow-2xl p-4 w-full max-w-sm transform scale-95 transition-transform duration-150">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-bold uppercase tracking-wider text-amber-600">Editar Item</label>
+                    <input type="text" id="popover-edit-input" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-amber-500 focus:bg-white">
+                    <div class="flex justify-end gap-1.5 mt-2">
+                        <button id="btn-popover-cancel" class="px-3 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100 rounded-md transition-colors cursor-pointer">Cancelar</button>
+                        <button id="btn-popover-save" class="px-4 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white rounded-md shadow-sm transition-colors cursor-pointer">Salvar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="backup-modal-backdrop" class="fixed inset-0 bg-black/40 z-[70] hidden items-center justify-center p-4">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-150 flex flex-col gap-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide">Backup & Restauração</h3>
+                    <button onclick="closeBackupPopup()" class="text-gray-400 hover:text-gray-700 font-bold text-lg cursor-pointer">&times;</button>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed">Faça o download das suas tarefas e notas, ou restaure o aplicativo a partir de um arquivo JSON salvo anteriormente.</p>
+                <div class="flex flex-col gap-2 mt-2">
+                    <button onclick="exportBackup(event)" class="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Fazer Download</button>
+                    <button onclick="document.getElementById('backup-file-input').click()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer">Restaurar Backup</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-create-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
+            <div class="flex-1 flex flex-col justify-start pt-20 max-w-xl w-full mx-auto p-6 space-y-6">
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">O que precisa ser feito?</label>
+                    <textarea id="input-fullscreen-create-task" placeholder="Primeira linha: Título da tarefa principal&#10;Próximas linhas: Subtarefas correspondentes" rows="6" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-500 focus:bg-white resize-none"></textarea>
+                    <p class="text-[11px] text-gray-400">Dica: Cole um texto com várias quebras diárias de linha para criar a tarefa e seus subitens rapidamente.</p>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="closeTaskCreateFullscreen()" class="px-5 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
+                    <button onclick="saveNewTaskAndRedirect()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer">Criar Tarefa</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="task-view-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
+            <div class="p-4 border-b border-gray-100 flex items-center bg-white flex-shrink-0">
+                <button onclick="closeTaskFullscreen()" class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    Voltar
+                </button>
+            </div>
+            <div class="flex-1 custom-scroll p-4 max-w-3xl w-full mx-auto flex flex-col pb-36">
+                <div class="flex items-center gap-2 mt-1 mb-3">
+                    <h3 id="fullscreen-task-title" class="text-lg font-bold text-gray-900 break-words leading-tight flex-1 cursor-pointer hover:text-amber-600 transition-colors" title="Clique para editar"></h3>
+                    <button id="btn-edit-fs-main-title" class="p-1.5 text-gray-400 hover:text-amber-600 cursor-pointer bg-gray-50 rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path></svg>
+                    </button>
+                </div>
+                <div class="border-t border-gray-100 pt-3 flex flex-col">
+                    <div class="relative mb-3">
+                        <input type="text" id="input-fullscreen-subtask" placeholder="Adicionar subitem à lista..." class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white">
+                        <button id="btn-add-fullscreen-subtask" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                    </div>
+                    <div id="fullscreen-subtasks-container" class="space-y-2 min-h-[40px]"></div>
+                    <div id="fullscreen-trash-subtasks-wrapper"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="note-view-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
+            <div class="p-4 border-b border-gray-100 flex items-center bg-white flex-shrink-0">
+                <button onclick="closeNoteFullscreen()" class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                    Voltar
+                </button>
+            </div>
+            <div class="flex-1 custom-scroll p-6 max-w-3xl w-full mx-auto flex flex-col gap-4 pb-36">
+                <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b border-gray-100 pb-2 text-base font-bold text-gray-800 bg-transparent focus:outline-none">
+                <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm text-gray-600 bg-transparent focus:outline-none"></textarea>
+            </div>
+        </div>
+
+        <aside id="sidebar" class="absolute top-0 bottom-0 left-0 w-28 bg-[#0f172a] text-gray-300 flex flex-col items-center justify-between flex-shrink-0 z-40 transform -translate-x-full transition-transform duration-200 md:static md:translate-x-0">
+            <div class="w-full flex flex-col items-center flex-1">
+                <nav class="w-full px-2 pt-4 space-y-3">
+                    <button id="btn-tasks" onclick="switchTab('tasks')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 bg-amber-500 text-white shadow-sm cursor-pointer">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                        <span class="text-[11px] font-medium tracking-wide block">Tarefas</span>
+                    </button>
+                    
+                    <button id="btn-notes" onclick="switchTab('notes')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <span class="text-[11px] font-medium tracking-wide block">Notas</span>
+                    </button>
+
+                    <button id="btn-trash" onclick="switchTab('trash')" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <span class="text-[11px] font-medium tracking-wide block">Lixeira</span>
+                    </button>
+
+                    <button id="btn-backup" onclick="openBackupPopup()" class="w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200">
+                        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                        <span class="text-[11px] font-medium tracking-wide block">Backup</span>
+                    </button>
+                </nav>
+            </div>
+            
+            <div class="w-full flex flex-col items-center flex-shrink-0">
+                <div class="p-3 text-center w-full">
+                    <span class="text-[10px] text-slate-400 font-mono tracking-wider border border-slate-700 bg-slate-800/80 px-2.5 py-1 rounded-md shadow-sm">V. 3.7</span>
+                </div>
+                <div class="h-20 w-full md:h-6"></div>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
+            
+            <div class="p-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 flex items-center justify-between gap-3 z-10">
+                <button onclick="toggleSidebar(true)" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                
+                <div class="relative flex-1 max-w-xl">
+                    <span class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </span>
+                    <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="w-full bg-gray-100 text-xs border border-transparent rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:bg-white focus:border-amber-300">
+                </div>
+
+                <button id="btn-header-action" onclick="handleHeaderActionClick()" class="flex items-center gap-1.5 px-3.5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer flex-shrink-0">
+                    <svg id="icon-header-action" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
+                    <span id="txt-header-action">Nova Tarefa</span>
+                </button>
+            </div>
+
+            <section id="section-tasks" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full">
+                <div class="flex-1 custom-scroll p-4 md:p-6 pb-36">
+                    <div id="tasks-container" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                </div>
+            </section>
+
+            <section id="section-notes" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
+                <div class="flex-1 custom-scroll p-4 md:p-6 pb-36">
+                    <div id="notes-grid" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                </div>
+            </section>
+
+            <section id="section-trash" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
+                <div class="flex-1 custom-scroll p-4 md:p-6 bg-gray-50/50 pb-36">
+                    <div id="trash-container" class="max-w-3xl mx-auto space-y-2.5 pb-36"></div>
+                </div>
+            </section>
+
+            <div class="absolute bottom-20 right-4 md:bottom-6 md:right-6 z-30 flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 p-1.5 rounded-xl shadow-md pb-safe">
+                <button id="btn-undo" onclick="handleUndo()" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer opacity-30 pointer-events-none" title="Desfazer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path></svg>
+                </button>
+                <div class="w-px h-4 bg-gray-200"></div>
+                <button id="btn-redo" onclick="handleRedo()" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer opacity-30 pointer-events-none" title="Refazer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3"></path></svg>
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js').then(reg => {
+                console.log('Service Worker registrado com sucesso:', reg);
+            }).catch(err => {
+                console.log('Erro ao registrar Service Worker:', err);
+            });
+        }
+
+        // v3.7 
+        let appState = { tasks: [], notes: [], trash: [], activeNoteId: null, activeTaskId: null };
+        let undoStack = [];
+        let redoStack = [];
+        let noteTimeout = null;
+        let activeTab = 'tasks';
+        let currentPopoverContext = null;
+        let searchQuery = '';
+        let currentFullscreenTaskId = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadFromLocalStorage();
+            renderTasks();
+            renderNotesList();
+            renderTrash();
+            applyStateToUI();
+            
+            document.getElementById('input-fullscreen-subtask').addEventListener('keypress', (e) => { if (e.key === 'Enter') addFullscreenSubtask(); });
+            document.getElementById('btn-add-fullscreen-subtask').addEventListener('click', addFullscreenSubtask);
+
+            setupDragAndDropContainer('tasks-container', 'task', reorderTasksArray);
+            setupDragAndDropContainer('notes-grid', 'note', reorderNotesArray);
+            setupDragAndDropContainer('fullscreen-subtasks-container', 'subtask', reorderFullscreenSubtasksArray);
+
+            document.getElementById('global-edit-backdrop').addEventListener('click', (e) => {
+                if (e.target.id === 'global-edit-backdrop') closePopover();
+            });
+
+            document.getElementById('backup-modal-backdrop').addEventListener('click', (e) => {
+                if (e.target.id === 'backup-modal-backdrop') closeBackupPopup();
+            });
+        });
+
+        function loadFromLocalStorage() {
+            const saved = localStorage.getItem('wundernotes_appState');
+            if (saved) {
+                try {
+                    appState = JSON.parse(saved);
+                } catch (e) {
+                    console.log('Erro ao carregar dados:', e);
+                }
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('wundernotes_appState', JSON.stringify(appState));
+        }
+
+        function saveToUndoStack(explicitState) {
+            const targetState = explicitState || appState;
+            const stateClone = JSON.parse(JSON.stringify(targetState));
+            undoStack.push(stateClone);
+            if (undoStack.length > 15) undoStack.shift();
+            redoStack = []; 
+            updateHistoryButtons();
+        }
+
+        function handleUndo() {
+            if (undoStack.length === 0) return;
+            const currentStateClone = JSON.parse(JSON.stringify(appState));
+            redoStack.push(currentStateClone);
+            appState = undoStack.pop();
+            saveToLocalStorage();
+            applyStateToUI();
+            if (currentFullscreenTaskId) renderTaskFullscreenContent(currentFullscreenTaskId);
+        }
+
+        function handleRedo() {
+            if (redoStack.length === 0) return;
+            const currentStateClone = JSON.parse(JSON.stringify(appState));
+            undoStack.push(currentStateClone);
+            appState = redoStack.pop();
+            saveToLocalStorage();
+            applyStateToUI();
+            if (currentFullscreenTaskId) renderTaskFullscreenContent(currentFullscreenTaskId);
+        }
+
+        function applyStateToUI() {
+            renderTasks();
+            renderNotesList();
+            renderTrash();
+            
+            const secTasks = document.getElementById('section-tasks');
+            const secNotes = document.getElementById('section-notes');
+            const secTrash = document.getElementById('section-trash');
+            
+            const btnTasks = document.getElementById('btn-tasks');
+            const btnNotes = document.getElementById('btn-notes');
+            const btnTrash = document.getElementById('btn-trash');
+            
+            const btnAction = document.getElementById('btn-header-action');
+            const txtAction = document.getElementById('txt-header-action');
+            const iconAction = document.getElementById('icon-header-action');
+            const searchInput = document.getElementById('global-search-input');
+
+            secTasks.classList.add('hidden');
+            secNotes.classList.add('hidden');
+            secTrash.classList.add('hidden');
+
+            const inactiveClass = "w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 text-gray-400 hover:bg-slate-800 hover:text-gray-200";
+            const activeClass = "w-full flex flex-col items-center justify-center py-3 px-1 rounded-xl text-center transition-all duration-150 bg-amber-500 text-white shadow-sm cursor-pointer";
+
+            btnTasks.className = inactiveClass;
+            btnNotes.className = inactiveClass;
+            btnTrash.className = inactiveClass;
+
+            btnAction.className = "flex items-center gap-1.5 px-3.5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer flex-shrink-0";
+            iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>`;
+            
+            if (activeTab === 'tasks') {
+                secTasks.classList.remove('hidden');
+                txtAction.innerText = "Nova Tarefa";
+                btnAction.classList.add('bg-amber-500', 'hover:bg-amber-600');
+                btnAction.classList.remove('bg-red-500', 'hover:bg-red-600');
+                searchInput.placeholder = "Pesquisar tarefas...";
+                btnTasks.className = activeClass;
+            } else if (activeTab === 'notes') {
+                secNotes.classList.remove('hidden');
+                txtAction.innerText = "Nova Nota";
+                btnAction.classList.add('bg-amber-500', 'hover:bg-amber-600');
+                btnAction.classList.remove('bg-red-500', 'hover:bg-red-600');
+                searchInput.placeholder = "Pesquisar notas...";
+                btnNotes.className = activeClass;
+            } else if (activeTab === 'trash') {
+                secTrash.classList.remove('hidden');
+                txtAction.innerText = "Limpar Lixeira";
+                btnAction.classList.remove('bg-amber-500', 'hover:bg-amber-600');
+                btnAction.classList.add('bg-red-500', 'hover:bg-red-600');
+                iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>`;
+                searchInput.placeholder = "Pesquisar excluídos...";
+                btnTrash.className = activeClass;
+            }
+            
+            updateHistoryButtons();
+        }
+
+        function handleHeaderActionClick() {
+            if (activeTab === 'tasks') {
+                openTaskCreateFullscreen();
+            } else if (activeTab === 'notes') {
+                createNewNote();
+            } else if (activeTab === 'trash') {
+                emptyTrash();
+            }
+        }
+
+        function openTaskCreateFullscreen() {
+            const input = document.getElementById('input-fullscreen-create-task');
+            input.value = '';
+            document.getElementById('task-create-fullscreen').classList.remove('hidden');
+            input.focus();
+        }
+
+        function closeTaskCreateFullscreen() {
+            document.getElementById('task-create-fullscreen').classList.add('hidden');
+        }
+
+        function saveNewTaskAndRedirect() {
+            const input = document.getElementById('input-fullscreen-create-task');
+            const lines = input.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            
+            if (lines.length === 0) return;
+
+            saveToUndoStack();
+            const newTaskId = Date.now().toString();
+            const mainTitle = lines[0];
+            
+            const subtasks = lines.slice(1).map((sub, idx) => ({
+                id: Date.now().toString() + idx,
+                title: sub,
+                completed: false
+            }));
+            
+            appState.tasks.unshift({ id: newTaskId, title: mainTitle, completed: false, subtasks: subtasks, trashSubtasks: [] });
+            saveToLocalStorage();
+            closeTaskCreateFullscreen();
+            openTaskFullscreen(newTaskId);
+        }
+
+        function updateHistoryButtons() {
+            const btnUndo = document.getElementById('btn-undo');
+            const btnRedo = document.getElementById('btn-redo');
+
+            if (undoStack.length > 0) btnUndo.classList.remove('opacity-30', 'pointer-events-none');
+            else btnUndo.classList.add('opacity-30', 'pointer-events-none');
+            if (redoStack.length > 0) btnRedo.classList.remove('opacity-30', 'pointer-events-none');
+            else btnRedo.classList.add('opacity-30', 'pointer-events-none');
+        }
+
+        function toggleSidebar(open) {
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (open) {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+                setTimeout(() => backdrop.classList.add('opacity-100'), 10);
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.remove('opacity-100');
+                setTimeout(() => backdrop.classList.add('hidden'), 200);
+            }
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            appState.activeTaskId = null;
+            document.getElementById('global-search-input').value = '';
+            searchQuery = '';
+            applyStateToUI();
+            toggleSidebar(false);
+        }
+
+        function handleGlobalSearch() {
+            searchQuery = document.getElementById('global-search-input').value.toLowerCase().trim();
+            if (activeTab === 'tasks') renderTasks();
+            else if (activeTab === 'notes') renderNotesList();
+            else if (activeTab === 'trash') renderTrash();
+        }
+
+        // --- SISTEMA DE BACKUP ---
+        function openBackupPopup() {
+            toggleSidebar(false); 
+            const backdrop = document.getElementById('backup-modal-backdrop');
+            backdrop.classList.remove('hidden');
+            backdrop.classList.add('flex');
+        }
+
+        function closeBackupPopup() {
+            const backdrop = document.getElementById('backup-modal-backdrop');
+            backdrop.classList.add('hidden');
+            backdrop.classList.remove('flex');
+        }
+
+        function exportBackup(event) {
+            if(event) event.stopPropagation();
+            closeBackupPopup();
+            const dataStr = JSON.stringify(appState, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            const exportFileDefaultName = `wundernotes_backup_${new Date().toISOString().slice(0,10)}.json`;
+            
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedState = JSON.parse(e.target.result);
+                    if (importedState && (Array.isArray(importedState.tasks) || Array.isArray(importedState.notes))) {
+                        saveToUndoStack();
+                        appState = importedState;
+                        if(!appState.tasks) appState.tasks = [];
+                        if(!appState.notes) appState.notes = [];
+                        if(!appState.trash) appState.trash = [];
+                        saveToLocalStorage();
+                        applyStateToUI();
+                        if (currentFullscreenTaskId) renderTaskFullscreenContent(currentFullscreenTaskId);
+                        closeBackupPopup();
+                        alert("Backup importado com sucesso!");
+                    } else {
+                        alert("Arquivo inválido. Certifique-se de escolher um arquivo JSON do WunderNotes.");
+                    }
+                } catch (err) {
+                    alert("Erro ao ler o arquivo de backup.");
+                }
+                event.target.value = ''; 
+            };
+            reader.readAsText(file);
+        }
+
+        function openPopover(triggerEl, textContainerEl, type, itemId, subItemId = null) {
+            const backdrop = document.getElementById('global-edit-backdrop');
+            const input = document.getElementById('popover-edit-input');
+            const btnSave = document.getElementById('btn-popover-save');
+            const btnCancel = document.getElementById('btn-popover-cancel');
+            
+            const currentText = textContainerEl.innerText;
+            input.value = currentText;
+            
+            backdrop.classList.remove('hidden');
+            backdrop.classList.add('flex');
+            input.focus();
+            input.select();
+
+            currentPopoverContext = { type, itemId, subItemId, currentText, textContainerEl };
+
+            const executeSave = () => {
+                const newText = input.value.trim();
+                if (newText && newText !== currentPopoverContext.currentText) {
+                    saveToUndoStack();
+                    if (currentPopoverContext.type === 'task') {
+                        const task = appState.tasks.find(t => t.id === currentPopoverContext.itemId);
+                        if(task) { task.title = newText; delete task.isRestored; }
+                    } else if (currentPopoverContext.type === 'subtask') {
+                        const task = appState.tasks.find(t => t.id === currentPopoverContext.itemId);
+                        if(task) {
+                            const sub = task.subtasks.find(s => s.id === currentPopoverContext.subItemId);
+                            if(sub) sub.title = newText;
+                            delete task.isRestored;
+                        }
+                    } else if (currentPopoverContext.type === 'noteTitle') {
+                        const note = appState.notes.find(n => n.id === currentPopoverContext.itemId);
+                        if(note) { note.title = newText; delete note.isRestored; }
+                    }
+                    saveToLocalStorage();
+                    applyStateToUI();
+                    if (currentFullscreenTaskId) renderTaskFullscreenContent(currentFullscreenTaskId);
+                }
+                closePopover();
+            };
+
+            input.onkeydown = (ke) => {
+                if (ke.key === 'Enter') executeSave();
+                if (ke.key === 'Escape') closePopover();
+            };
+            
+            btnSave.onclick = () => executeSave();
+            btnCancel.onclick = () => closePopover();
+        }
+
+        function closePopover() {
+            const backdrop = document.getElementById('global-edit-backdrop');
+            backdrop.classList.add('hidden');
+            backdrop.classList.remove('flex');
+            currentPopoverContext = null;
+        }
+
+        // --- DRAG AND DROP NATIVO ---
+        function setupDragAndDropContainer(containerId, typeTag, reorderCallback) {
+            const container = document.getElementById(containerId);
+            if(!container) return;
+
+            container.addEventListener('dragover', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const draggable = document.querySelector('.dragging');
+                if (!draggable || draggable.dataset.type !== typeTag) return;
+                
+                const afterElement = getDragAfterElement(container, e.clientY, typeTag);
+                if (afterElement == null) {
+                    container.appendChild(draggable);
+                } else {
+                    container.insertBefore(draggable, afterElement);
+                }
+            });
+
+            container.addEventListener('drop', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                const elements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]`)];
+                const newIdsOrder = elements.map(el => el.dataset.id);
+                reorderCallback(newIdsOrder);
+            });
+        }
+
+        function attachDragEvents(element) {
+            element.setAttribute('draggable', 'true');
+            element.addEventListener('dragstart', (e) => { 
+                closePopover(); 
+                element.classList.add('dragging'); 
+                e.dataTransfer.effectAllowed = 'move';
+                if(e.dataTransfer) e.dataTransfer.setData('text/plain', element.dataset.id); 
+                e.stopPropagation(); 
+            });
+            element.addEventListener('dragend', (e) => { 
+                element.classList.remove('dragging'); 
+                e.stopPropagation(); 
+            });
+        }
+
+        function getDragAfterElement(container, y, typeTag) {
+            const draggableElements = [...container.querySelectorAll(`:scope > [data-type="${typeTag}"]:not(.dragging)`)];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+                else return closest;
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function reorderTasksArray(orderedIds) {
+            saveToUndoStack();
+            appState.tasks = orderedIds.map(id => appState.tasks.find(t => t.id === id)).filter(Boolean);
+            saveToLocalStorage();
+            renderTasks();
+        }
+        
+        function reorderNotesArray(orderedIds) {
+            saveToUndoStack();
+            appState.notes = orderedIds.map(id => appState.notes.find(n => n.id === id)).filter(Boolean);
+            saveToLocalStorage();
+            renderNotesList();
+        }
+        
+        function reorderFullscreenSubtasksArray(orderedIds) {
+            if (!currentFullscreenTaskId) return;
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
+            if(task) {
+                task.subtasks = orderedIds.map(id => task.subtasks.find(s => s.id === id)).filter(Boolean);
+                saveToLocalStorage();
+                renderTaskFullscreenContent(currentFullscreenTaskId);
+            }
+        }
+
+        function toggleTaskCompleted(taskId, event) {
+            if(event) event.stopPropagation();
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) { task.completed = !task.completed; saveToLocalStorage(); renderTasks(); }
+        }
+
+        function deleteTask(taskId, event) {
+            if(event) event.stopPropagation();
+            saveToUndoStack();
+            const taskIndex = appState.tasks.findIndex(t => t.id === taskId);
+            if (taskIndex !== -1) {
+                const removed = appState.tasks.splice(taskIndex, 1)[0];
+                appState.trash.push({ id: removed.id, type: 'task', title: removed.title, originalData: removed, deletedAt: new Date().toLocaleDateString('pt-BR') });
+            }
+            saveToLocalStorage();
+            renderTasks();
+            renderTrash();
+        }
+
+        // --- RENDERIZAÇÃO DAS TAREFAS ---
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const filteredTasks = appState.tasks.filter(task => {
+                if (!searchQuery) return true;
+                const matchMain = task.title.toLowerCase().includes(searchQuery);
+                const matchSub = task.subtasks.some(s => s.title.toLowerCase().includes(searchQuery));
+                return matchMain || matchSub;
+            });
+
+            if (filteredTasks.length === 0) { 
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Nenhuma tarefa encontrada.</div>`; 
+                return; 
+            }
+
+            filteredTasks.forEach(task => {
+                const card = document.createElement('div');
+                card.className = `border shadow-sm rounded-xl overflow-hidden flex flex-col transition-all cursor-pointer ${task.completed ? 'bg-gray-50 border-gray-100 opacity-90' : 'bg-white border-amber-100 hover:border-amber-300'}`;
+                card.dataset.id = task.id; card.dataset.type = 'task';
+
+                let dropdownHtml = '';
+                const previewSubtasks = task.subtasks.slice(0, 2);
+                if (previewSubtasks.length > 0) {
+                    dropdownHtml += `<div class="px-4 pb-2.5 border-t border-gray-50 pt-2 ${task.completed ? '' : 'bg-gray-50/40'}">`;
+                    previewSubtasks.forEach(sub => {
+                        dropdownHtml += `
+                            <div class="flex items-center gap-2 max-w-full">
+                                <div class="w-1 h-1 rounded-full ${sub.completed ? 'bg-gray-300' : 'bg-amber-400'} flex-shrink-0"></div>
+                                <span class="text-[11px] font-medium ${task.completed ? 'text-gray-400' : 'text-gray-500'} truncate ${sub.completed ? 'line-through opacity-70' : ''}">${sub.title}</span>
+                            </div>`;
+                    });
+                    if (task.subtasks.length > 2) dropdownHtml += `<div class="text-[10px] text-amber-600 font-bold pl-3 pt-0.5">+ Mais ${task.subtasks.length - 2} itens...</div>`;
+                    dropdownHtml += `</div>`;
+                }
+
+                const totalSub = task.subtasks ? task.subtasks.length : 0;
+                const compSub = task.subtasks ? task.subtasks.filter(s => s.completed).length : 0;
+                let progressHtml = '';
+                if (totalSub > 0) {
+                    progressHtml = `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-100 shadow-sm ml-2 flex-shrink-0">${compSub}/${totalSub}</span>`;
+                }
+
+                const restoredTag = task.isRestored ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700 ml-2 shadow-sm flex-shrink-0">Restaurada</span>` : '';
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between p-3.5 gap-3">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <input type="checkbox" ${task.completed ? 'checked' : ''} onclick="toggleTaskCompleted('${task.id}', event)" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer">
+                            
+                            <div class="flex items-center flex-1 min-w-0 gap-1 select-none">
+                                <span class="text-sm font-bold text-gray-800 break-words ${task.completed ? 'line-through text-gray-400 font-normal' : ''}">${task.title}</span>
+                                ${progressHtml}
+                                ${restoredTag}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                            <button class="btn-edit-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path></svg>
+                            </button>
+                            <button onclick="deleteTask('${task.id}', event)" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                        </div>
+                    </div>
+                    ${dropdownHtml}
+                `;
+
+                attachDragEvents(card);
+                
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('input[type="checkbox"], button, svg, path')) return;
+                    openTaskFullscreen(task.id);
+                });
+
+                card.querySelector('.btn-edit-pencil').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const tempEl = document.createElement('div');
+                    tempEl.innerText = task.title; 
+                    openPopover(card.querySelector('.btn-edit-pencil'), tempEl, 'task', task.id);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        // --- RENDERIZAÇÃO DAS NOTAS ---
+        function renderNotesList() {
+            const grid = document.getElementById('notes-grid');
+            if(!grid) return;
+            grid.innerHTML = '';
+            
+            const filteredNotes = appState.notes.filter(note => {
+                if (!searchQuery) return true;
+                return note.title.toLowerCase().includes(searchQuery) || note.content.toLowerCase().includes(searchQuery);
+            });
+
+            if (filteredNotes.length === 0) { 
+                grid.innerHTML = `<div class="text-xs text-gray-400 text-center py-12 font-medium">Nenhuma nota encontrada.</div>`; 
+                return; 
+            }
+            
+            filteredNotes.forEach(note => {
+                const card = document.createElement('div');
+                const isAct = note.id === appState.activeNoteId;
+                card.className = `p-4 rounded-xl border shadow-sm transition-all relative cursor-pointer ${isAct ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-amber-200'}`;
+                card.dataset.id = note.id; card.dataset.type = 'note';
+                
+                const restoredTag = note.isRestored ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700 ml-2 shadow-sm flex-shrink-0">Restaurada</span>` : '';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-2 pr-14">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1 mb-1">
+                                <h4 class="text-sm font-bold text-gray-800 truncate">${note.title || 'Nota sem título'}</h4>
+                                ${restoredTag}
+                            </div>
+                            <p class="text-xs text-gray-500 truncate">${note.content || 'Sem descrição...'}</p>
+                        </div>
+                    </div>
+                    <div class="absolute right-2 top-2.5 flex items-center gap-0.5">
+                        <button class="btn-edit-note-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar Título">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path></svg>
+                        </button>
+                        <button onclick="deleteNoteDirectly('${note.id}', event)" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                `;
+                
+                attachDragEvents(card);
+
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('button, svg, path')) return;
+                    openNoteEditor(note.id);
+                });
+
+                card.querySelector('.btn-edit-note-pencil').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const tempEl = document.createElement('div');
+                    tempEl.innerText = note.title; 
+                    openPopover(card.querySelector('.btn-edit-note-pencil'), tempEl, 'noteTitle', note.id);
+                });
+
+                grid.appendChild(card);
+            });
+        }
+
+        function createNewNote() {
+            saveToUndoStack();
+            const id = Date.now().toString();
+            appState.notes.unshift({ id: id, title: 'Nova Nota', content: '', updatedAt: new Date().toLocaleDateString('pt-BR') });
+            appState.activeNoteId = id;
+            saveToLocalStorage();
+            renderNotesList();
+            openNoteEditor(id);
+        }
+
+        function openNoteEditor(noteId) {
+            appState.activeNoteId = noteId;
+            const note = appState.notes.find(n => n.id === noteId);
+            if (!note) return;
+
+            if(note.isRestored) {
+                delete note.isRestored;
+                saveToLocalStorage();
+            }
+
+            document.getElementById('note-view-fullscreen').classList.remove('hidden');
+            document.getElementById('note-title-input').value = note.title;
+            document.getElementById('note-content-input').value = note.content;
+            renderNotesList();
+            updateHistoryButtons();
+        }
+
+        function closeNoteFullscreen() {
+            document.getElementById('note-view-fullscreen').classList.add('hidden');
+            appState.activeNoteId = null;
+            renderNotesList();
+            updateHistoryButtons();
+        }
+
+        function updateCurrentNoteWithDebounce() {
+            if (noteTimeout) clearTimeout(noteTimeout);
+            noteTimeout = setTimeout(() => { saveToUndoStack(); updateCurrentNoteImmediate(); }, 900);
+            updateCurrentNoteImmediate();
+        }
+
+        function updateCurrentNoteImmediate() {
+            if (!appState.activeNoteId) return;
+            const note = appState.notes.find(n => n.id === appState.activeNoteId);
+            if (note) {
+                note.title = document.getElementById('note-title-input').value;
+                note.content = document.getElementById('note-content-input').value;
+                delete note.isRestored;
+                saveToLocalStorage();
+                renderNotesList();
+            }
+        }
+
+        function deleteNoteDirectly(noteId, event) {
+            if (event) event.stopPropagation();
+            
+            saveToUndoStack();
+            const noteIndex = appState.notes.findIndex(n => n.id === noteId);
+            if (noteIndex !== -1) {
+                const removed = appState.notes.splice(noteIndex, 1)[0];
+                appState.trash.push({ id: removed.id, type: 'note', title: removed.title, originalData: removed, deletedAt: new Date().toLocaleDateString('pt-BR') });
+            }
+            if (appState.activeNoteId === noteId) {
+                appState.activeNoteId = null;
+                closeNoteFullscreen();
+            }
+            saveToLocalStorage();
+            renderNotesList();
+            renderTrash();
+            updateHistoryButtons();
+        }
+
+        // --- RENDERIZAÇÃO DA LIXEIRA ---
+        function renderTrash() {
+            const container = document.getElementById('trash-container');
+            if(!container) return;
+            container.innerHTML = '';
+            
+            const filteredTrash = appState.trash.filter(item => {
+                if (!searchQuery) return true;
+                return item.title.toLowerCase().includes(searchQuery);
+            });
+
+            if (filteredTrash.length === 0) { 
+                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Lixeira vazia.</div>`; 
+                return; 
+            }
+
+            filteredTrash.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'p-3.5 border border-red-100 bg-red-50/30 rounded-xl shadow-sm flex items-center justify-between gap-3';
+                
+                card.innerHTML = `
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-600 truncate">${item.title}</p>
+                        <p class="text-xs text-gray-400">Excluído em ${item.deletedAt}</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0">
+                        <button onclick="restoreFromTrash('${item.id}')" class="px-3 py-1.5 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors cursor-pointer">Restaurar</button>
+                        <button onclick="permDeleteFromTrash('${item.id}')" class="px-3 py-1.5 text-xs font-bold bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors cursor-pointer">Deletar</button>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function restoreFromTrash(itemId) {
+            saveToUndoStack();
+            const trashIndex = appState.trash.findIndex(i => i.id === itemId);
+            if (trashIndex !== -1) {
+                const item = appState.trash.splice(trashIndex, 1)[0];
+                item.isRestored = true;
+                
+                if (item.type === 'task') {
+                    appState.tasks.unshift(item.originalData);
+                } else if (item.type === 'note') {
+                    appState.notes.unshift(item.originalData);
+                }
+            }
+            saveToLocalStorage();
+            renderTrash();
+            renderTasks();
+            renderNotesList();
+        }
+
+        function permDeleteFromTrash(itemId) {
+            saveToUndoStack();
+            appState.trash = appState.trash.filter(i => i.id !== itemId);
+            saveToLocalStorage();
+            renderTrash();
+        }
+
+        function emptyTrash() {
+            if (appState.trash.length === 0) {
+                alert('Lixeira já está vazia!');
+                return;
+            }
+            
+            if (confirm('Tem certeza que deseja limpar toda a lixeira? Esta ação não pode ser desfeita.')) {
+                saveToUndoStack();
+                appState.trash = [];
+                saveToLocalStorage();
+                renderTrash();
+            }
+        }
+
+        // --- TELA EXCLUSIVA PARA SUBTAREFAS ---
+        function openTaskFullscreen(taskId) {
+            currentFullscreenTaskId = taskId;
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.isRestored) {
+                delete task.isRestored;
+                saveToLocalStorage();
+                renderTasks();
+            }
+            document.getElementById('task-view-fullscreen').classList.remove('hidden');
+            renderTaskFullscreenContent(taskId);
+        }
+
+        function closeTaskFullscreen() {
+            currentFullscreenTaskId = null;
+            document.getElementById('task-view-fullscreen').classList.add('hidden');
+            renderTasks();
+        }
+
+        function renderTaskFullscreenContent(taskId) {
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(!task) { closeTaskFullscreen(); return; }
+            if(!task.trashSubtasks) task.trashSubtasks = [];
+
+            const titleEl = document.getElementById('fullscreen-task-title');
+            titleEl.innerText = task.title;
+            
+            const bindTitleEdit = () => {
+                const tempEl = document.createElement('div');
+                tempEl.innerText = task.title; 
+                openPopover(titleEl, tempEl, 'task', task.id);
+            };
+            titleEl.onclick = bindTitleEdit;
+            document.getElementById('btn-edit-fs-main-title').onclick = bindTitleEdit;
+
+            const container = document.getElementById('fullscreen-subtasks-container');
+            container.innerHTML = '';
+
+            if (task.subtasks.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium">Nenhum subitem ativo.</div>`;
+            } else {
+                task.subtasks.forEach(sub => {
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between p-3 border border-gray-200 rounded-xl gap-2 select-none transition-colors cursor-grab active:cursor-grabbing ${sub.completed ? 'bg-gray-50 opacity-75' : 'bg-white hover:bg-amber-50'}`;
+                    row.dataset.id = sub.id; row.dataset.type = 'subtask';
+
+                    row.innerHTML = `
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <input type="checkbox" ${sub.completed ? 'checked' : ''} onclick="toggleFullscreenSubtask('${task.id}', '${sub.id}')" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer">
+                            <span class="text-xs font-semibold text-gray-700 break-words flex-1 min-w-0 editable-subfullscreen-txt ${sub.completed ? 'line-through text-gray-400 font-normal' : ''}">${sub.title}</span>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                            <button class="btn-edit-fs-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path></svg>
+                            </button>
+                            <button onclick="deleteFullscreenSubtask('${task.id}', '${sub.id}')" class="p-1 text-red-400 hover:bg-red-50 rounded cursor-pointer">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+
+                    attachDragEvents(row);
+                    row.querySelector('.btn-edit-fs-pencil').addEventListener('click', () => {
+                        openPopover(row.querySelector('.btn-edit-fs-pencil'), row.querySelector('.editable-subfullscreen-txt'), 'subtask', task.id, sub.id);
+                    });
+
+                    container.appendChild(row);
+                });
+            }
+
+            const trashWrapper = document.getElementById('fullscreen-trash-subtasks-wrapper');
+            trashWrapper.innerHTML = '';
+            
+            if (task.trashSubtasks && task.trashSubtasks.length > 0) {
+                let trashItemsHtml = task.trashSubtasks.map(ts => `
+                    <div class="flex items-center justify-between p-2.5 border border-red-100 bg-red-50/30 rounded-xl gap-2">
+                        <span class="text-[11px] font-semibold text-gray-400 line-through truncate">${ts.title}</span>
+                        <div class="flex gap-1.5 flex-shrink-0">
+                            <button onclick="restoreFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded cursor-pointer transition-colors hover:bg-emerald-200">Restaurar</button>
+                            <button onclick="permDeleteFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-red-100 text-red-600 rounded cursor-pointer transition-colors hover:bg-red-200">Deletar</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                trashWrapper.innerHTML = `
+                    <div class="mt-8 border-t border-gray-100 pt-4">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Subitens Excluídos</h4>
+                        <div class="space-y-1.5">${trashItemsHtml}</div>
+                    </div>
+                `;
+            }
+        }
+
+        function addFullscreenSubtask() {
+            if(!currentFullscreenTaskId) return;
+            const input = document.getElementById('input-fullscreen-subtask');
+            const title = input.value.trim();
+            if(!title) return;
+
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === currentFullscreenTaskId);
+            if(task) {
+                task.subtasks.push({ id: Date.now().toString(), title: title, completed: false });
+                saveToLocalStorage();
+                renderTaskFullscreenContent(currentFullscreenTaskId);
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function toggleFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) {
+                const sub = task.subtasks.find(s => s.id === subtaskId);
+                if (sub) sub.completed = !sub.completed;
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
+            }
+        }
+
+        function deleteFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if (task) {
+                if(!task.trashSubtasks) task.trashSubtasks = [];
+                const subIndex = task.subtasks.findIndex(s => s.id === subtaskId);
+                if (subIndex !== -1) {
+                    const sub = task.subtasks[subIndex];
+                    sub.originalIndex = subIndex; 
+                    task.trashSubtasks.push(sub);
+                    task.subtasks.splice(subIndex, 1);
+                }
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
+            }
+        }
+
+        function restoreFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.trashSubtasks) {
+                const subIndex = task.trashSubtasks.findIndex(s => s.id === subtaskId);
+                if(subIndex !== -1) {
+                    const sub = task.trashSubtasks.splice(subIndex, 1)[0];
+                    const targetIndex = (sub.originalIndex !== undefined && sub.originalIndex <= task.subtasks.length) ? sub.originalIndex : task.subtasks.length;
+                    task.subtasks.splice(targetIndex, 0, sub);
+                    delete sub.originalIndex; 
+                    saveToLocalStorage();
+                    renderTaskFullscreenContent(taskId);
+                }
+            }
+        }
+
+        function permDeleteFullscreenSubtask(taskId, subtaskId) {
+            saveToUndoStack();
+            const task = appState.tasks.find(t => t.id === taskId);
+            if(task && task.trashSubtasks) {
+                task.trashSubtasks = task.trashSubtasks.filter(s => s.id !== subtaskId);
+                saveToLocalStorage();
+                renderTaskFullscreenContent(taskId);
+            }
+        }
+    </script>
+</body>
+</html>
