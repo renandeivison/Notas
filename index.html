@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect fill='%23f59e0b' width='180' height='180'/><text x='90' y='120' font-size='100' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%23f59e0b' width='192' height='192'/><text x='96' y='120' font-size='120' font-weight='bold' text-anchor='middle' fill='white' font-family='Arial'>W</text></svg>">
-    <title>WunderNotes & Tasks v3.7</title>
+    <title>WunderNotes & Tasks v4.0</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         /* ── Light theme tokens ── */
@@ -387,21 +387,21 @@
                     </button>
                 </div>
                 <div class="p-3 text-center w-full">
-                    <span class="text-[10px] text-slate-400 font-mono tracking-wider border border-slate-700 bg-slate-800/80 px-2.5 py-1 rounded-md shadow-sm">V. 3.7</span>
+                    <span class="text-[10px] text-slate-400 font-mono tracking-wider border border-slate-700 bg-slate-800/80 px-2.5 py-1 rounded-md shadow-sm">V. 4.0</span>
                 </div>
                 <div class="h-20 w-full md:h-6"></div>
             </div>
         </aside>
 
-        <main id="main-area" class="flex-1 flex flex-col h-full bg-[#f8fafc] overflow-hidden relative">
+        <main id="main-area" class="flex-1 flex flex-col h-full overflow-hidden relative" style="background:var(--bg-main)">
             
-            <div id="top-header" class="p-3 bg-white border-b border-gray-200 shadow-sm flex-shrink-0 flex items-center justify-between gap-3 z-10">
-                <button id="btn-hamburger" onclick="toggleSidebar(true)" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer flex-shrink-0">
+            <div id="top-header" class="p-3 border-b shadow-sm flex-shrink-0 flex items-center justify-between gap-3 z-10" style="background:var(--bg-header);border-color:var(--border-header)">
+                <button id="btn-hamburger" onclick="toggleSidebar(true)" class="p-2 rounded-xl transition-colors cursor-pointer flex-shrink-0" style="color:var(--text-secondary)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
                 
                 <div class="relative flex-1 max-w-xl">
-                    <span id="search-icon" class="absolute inset-y-0 left-3 flex items-center text-gray-400">
+                    <span id="search-icon" class="absolute inset-y-0 left-3 flex items-center" style="color:var(--text-muted)">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </span>
                     <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="dm-input w-full text-xs border rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-amber-300">
@@ -414,13 +414,13 @@
             </div>
 
             <section id="section-tasks" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full">
-                <div id="tasks-scroll-container" class="flex-1 custom-scroll p-4 md:p-6 pb-12">
+                <div id="tasks-scroll-container" class="flex-1 custom-scroll p-4 md:p-6 pb-12" style="background:var(--bg-main)">
                     <div id="tasks-container" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
 
             <section id="section-notes" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
-                <div id="notes-scroll-container" class="flex-1 custom-scroll p-4 md:p-6 pb-12">
+                <div id="notes-scroll-container" class="flex-1 custom-scroll p-4 md:p-6 pb-12" style="background:var(--bg-main)">
                     <div id="notes-grid" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
@@ -431,12 +431,12 @@
                 </div>
             </section>
 
-            <div id="undo-redo-bar" class="absolute bottom-20 right-4 md:bottom-6 md:right-6 z-30 flex items-center gap-1 bg-white/95 backdrop-blur border border-gray-200 p-1.5 rounded-xl shadow-md pb-safe">
-                <button id="btn-undo" onclick="handleUndo()" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer opacity-30 pointer-events-none" title="Desfazer">
+            <div id="undo-redo-bar" class="absolute bottom-20 right-4 md:bottom-6 md:right-6 z-30 flex items-center gap-1 backdrop-blur p-1.5 rounded-xl shadow-md pb-safe" style="background:var(--bg-undo);border:1px solid var(--border-undo)">
+                <button id="btn-undo" onclick="handleUndo()" class="p-2 rounded-lg transition-all cursor-pointer opacity-30 pointer-events-none" style="color:var(--text-label)" title="Desfazer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path></svg>
                 </button>
-                <div id="undo-redo-divider" class="w-px h-4 bg-gray-200"></div>
-                <button id="btn-redo" onclick="handleRedo()" class="p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all cursor-pointer opacity-30 pointer-events-none" title="Refazer">
+                <div id="undo-redo-divider" class="w-px h-4" style="background:var(--border-undo)"></div>
+                <button id="btn-redo" onclick="handleRedo()" class="p-2 rounded-lg transition-all cursor-pointer opacity-30 pointer-events-none" style="color:var(--text-label)" title="Refazer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 15l6-6m0 0l-6-6m6 6H9a6 6 0 000 12h3"></path></svg>
                 </button>
             </div>
@@ -467,9 +467,9 @@
         function escapeHtml(str) {
             if (str == null) return '';
             return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
+                .replace(/&/g, '&')
+                .replace(/</g, '<')
+                .replace(/>/g, '>')
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#39;');
         }
@@ -997,7 +997,7 @@
             });
 
             if (filteredTasks.length === 0) { 
-                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Nenhuma tarefa encontrada.</div>`; 
+                container.innerHTML = `<div class="text-center py-12 text-xs font-medium" style="color:var(--text-muted)">Nenhuma tarefa encontrada.</div>`; 
                 return; 
             }
 
