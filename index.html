@@ -302,26 +302,26 @@
         <div id="task-create-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
             <div class="flex-1 flex flex-col justify-start pt-20 max-w-xl w-full mx-auto p-6 space-y-6">
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">O que precisa ser feito?</label>
-                    <textarea id="input-fullscreen-create-task" placeholder="Primeira linha: Título da tarefa principal&#10;Próximas linhas: Subtarefas correspondentes" rows="6" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-amber-500 focus:bg-white resize-none"></textarea>
-                    <p class="text-[11px] text-gray-400">Dica: Cole um texto com várias quebras diárias de linha para criar a tarefa e seus subitens rapidamente.</p>
+                    <label class="text-xs font-bold uppercase tracking-wide" style="color:var(--text-muted)">O que precisa ser feito?</label>
+                    <textarea id="input-fullscreen-create-task" placeholder="Primeira linha: Título da tarefa principal&#10;Próximas linhas: Subtarefas correspondentes" rows="6" class="w-full rounded-xl p-3 text-sm focus:outline-none focus:border-amber-500 resize-none" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary)"></textarea>
+                    <p class="text-[11px]" style="color:var(--text-muted)">Dica: Cole um texto com várias quebras diárias de linha para criar a tarefa e seus subitens rapidamente.</p>
                 </div>
                 <div class="flex justify-end gap-3">
-                    <button onclick="closeTaskCreateFullscreen()" class="fs-back-btn px-5 py-2.5 text-xs font-bold text-gray-500 hover:bg-gray-100 rounded-xl cursor-pointer">Cancelar</button>
+                    <button onclick="closeTaskCreateFullscreen()" class="fs-back-btn px-5 py-2.5 text-xs font-bold rounded-xl cursor-pointer" style="color:var(--text-secondary)">Cancelar</button>
                     <button onclick="saveNewTaskAndRedirect()" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow transition-colors cursor-pointer">Criar Tarefa</button>
                 </div>
             </div>
         </div>
 
         <div id="task-view-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
-            <div id="task-view-fs-header" class="border-b border-gray-100 bg-white flex-shrink-0 flex flex-col w-full max-w-3xl mx-auto px-4 pt-4 pb-2">
-                <button onclick="closeTaskFullscreen()" class="fs-back-btn flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 cursor-pointer transition-colors mb-2">
+            <div id="task-view-fs-header" class="border-b flex-shrink-0 flex flex-col w-full max-w-3xl mx-auto px-4 pt-4 pb-2" style="border-color:var(--border-section)">
+                <button onclick="closeTaskFullscreen()" class="fs-back-btn flex items-center gap-1.5 text-xs font-bold cursor-pointer transition-colors mb-2" style="color:var(--text-muted)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     Voltar
                 </button>
                 <div class="flex items-center gap-2 mt-1 mb-1">
-                    <h3 id="fullscreen-task-title" class="text-lg font-bold text-gray-900 break-words leading-tight flex-1 cursor-pointer hover:text-amber-600 transition-colors" title="Clique para editar"></h3>
-                    <button id="btn-edit-fs-main-title" class="p-1.5 text-gray-400 hover:text-amber-600 cursor-pointer bg-gray-50 rounded-lg transition-colors flex-shrink-0">
+                    <h3 id="fullscreen-task-title" class="text-lg font-bold break-words leading-tight flex-1 cursor-pointer hover:text-amber-600 transition-colors" style="color:var(--text-primary)" title="Clique para editar"></h3>
+                    <button id="btn-edit-fs-main-title" class="p-1.5 hover:text-amber-600 cursor-pointer rounded-lg transition-colors flex-shrink-0" style="color:var(--text-muted);background:var(--bg-input)">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125"></path></svg>
                     </button>
                 </div>
@@ -329,8 +329,8 @@
             <div id="fullscreen-task-scroll-body" class="flex-1 custom-scroll p-4 max-w-3xl w-full mx-auto flex flex-col pb-12">
                 <div class="flex flex-col">
                     <div class="relative mb-3">
-                        <input type="text" id="input-fullscreen-subtask" placeholder="Adicionar subitem à lista..." class="w-full bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:bg-white">
-                        <button id="btn-add-fullscreen-subtask" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-gray-900 text-white rounded-lg hover:bg-black transition-colors cursor-pointer">
+                        <input type="text" id="input-fullscreen-subtask" placeholder="Adicionar subitem à lista..." class="w-full rounded-xl pl-4 pr-12 py-2.5 text-sm focus:outline-none focus:border-amber-500" style="background:var(--bg-input);border:1px solid var(--border-input);color:var(--text-primary)">
+                        <button id="btn-add-fullscreen-subtask" class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </div>
@@ -341,15 +341,15 @@
         </div>
 
         <div id="note-view-fullscreen" class="absolute inset-0 bg-white z-40 hidden flex flex-col">
-            <div id="note-view-fs-header" class="p-4 border-b border-gray-100 flex items-center bg-white flex-shrink-0">
-                <button onclick="closeNoteFullscreen()" class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 cursor-pointer transition-colors">
+            <div id="note-view-fs-header" class="p-4 border-b flex items-center flex-shrink-0" style="border-color:var(--border-section)">
+                <button onclick="closeNoteFullscreen()" class="fs-back-btn flex items-center gap-1.5 text-xs font-bold cursor-pointer transition-colors" style="color:var(--text-muted)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                     Voltar
                 </button>
             </div>
             <div class="flex-1 custom-scroll p-6 max-w-3xl w-full mx-auto flex flex-col gap-4 pb-12">
-                <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b border-gray-100 pb-2 text-base font-bold text-gray-800 bg-transparent focus:outline-none">
-                <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm text-gray-600 bg-transparent focus:outline-none"></textarea>
+                <input type="text" id="note-title-input" placeholder="Título da nota..." oninput="updateCurrentNoteWithDebounce()" class="w-full border-b pb-2 text-base font-bold bg-transparent focus:outline-none" style="border-color:var(--border-section);color:var(--text-primary)">
+                <textarea id="note-content-input" placeholder="Comece a digitar os detalhes da nota aqui..." oninput="updateCurrentNoteWithDebounce()" class="w-full flex-1 resize-none text-sm bg-transparent focus:outline-none" style="color:var(--text-secondary)"></textarea>
             </div>
         </div>
 
@@ -404,7 +404,7 @@
                     <span id="search-icon" class="absolute inset-y-0 left-3 flex items-center text-gray-400">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </span>
-                    <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="w-full bg-gray-100 text-xs border border-transparent rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:bg-white focus:border-amber-300">
+                    <input type="text" id="global-search-input" oninput="handleGlobalSearch()" placeholder="Pesquisar..." class="dm-input w-full text-xs border rounded-xl pl-9 pr-4 py-2 focus:outline-none focus:border-amber-300">
                 </div>
 
                 <button id="btn-header-action" onclick="handleHeaderActionClick()" class="flex items-center gap-1.5 px-3.5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer flex-shrink-0 bg-amber-500 hover:bg-amber-600">
@@ -426,7 +426,7 @@
             </section>
 
             <section id="section-trash" class="absolute inset-0 pt-[62px] flex flex-col w-full h-full hidden">
-                <div class="flex-1 custom-scroll p-4 md:p-6 bg-gray-50/50 pb-12">
+                <div class="flex-1 custom-scroll p-4 md:p-6 pb-12" style="background:var(--bg-main)">
                     <div id="trash-container" class="max-w-3xl mx-auto space-y-2.5 pb-12"></div>
                 </div>
             </section>
@@ -1081,14 +1081,15 @@
             });
 
             if (filteredNotes.length === 0) { 
-                grid.innerHTML = `<div class="text-xs text-gray-400 text-center py-12 font-medium">Nenhuma nota encontrada.</div>`; 
+                grid.innerHTML = `<div class="text-xs text-center py-12 font-medium" style="color:var(--text-muted)">Nenhuma nota encontrada.</div>`; 
                 return; 
             }
             
             filteredNotes.forEach(note => {
                 const card = document.createElement('div');
                 const isAct = note.id === appState.activeNoteId;
-                card.className = `p-4 rounded-xl border shadow-sm transition-all relative cursor-pointer ${isAct ? 'bg-amber-50 border-amber-300' : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-amber-200'}`;
+                card.className = `dm-card p-4 rounded-xl border shadow-sm transition-all relative cursor-pointer ${isAct ? 'border-amber-300' : 'hover:border-amber-200'}`;
+                if (isAct) card.style.background = 'var(--bg-subtask-hover)';
                 card.dataset.id = note.id; card.dataset.type = 'note';
                 
                 const restoredTag = note.isRestored ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-emerald-100 text-emerald-700 ml-2 shadow-sm flex-shrink-0">Restaurada</span>` : '';
@@ -1097,10 +1098,10 @@
                     <div class="flex items-start gap-2 pr-14">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-1 mb-1">
-                                <h4 class="text-sm font-bold text-gray-800 truncate">${escapeHtml(note.title) || 'Nota sem título'}</h4>
+                                <h4 class="text-sm font-bold truncate" style="color:var(--text-primary)">${escapeHtml(note.title) || 'Nota sem título'}</h4>
                                 ${restoredTag}
                             </div>
-                            <p class="text-xs text-gray-500 truncate">${escapeHtml(note.content) || 'Sem descrição...'}</p>
+                            <p class="text-xs truncate" style="color:var(--text-secondary)">${escapeHtml(note.content) || 'Sem descrição...'}</p>
                         </div>
                     </div>
                     <div class="absolute right-2 top-2.5 flex items-center gap-0.5">
@@ -1213,18 +1214,18 @@
             });
 
             if (filteredTrash.length === 0) { 
-                container.innerHTML = `<div class="text-center py-12 text-gray-400 text-xs font-medium">Lixeira vazia.</div>`; 
+                container.innerHTML = `<div class="text-center py-12 text-xs font-medium" style="color:var(--text-muted)">Lixeira vazia.</div>`; 
                 return; 
             }
 
             filteredTrash.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'p-3.5 border border-red-100 bg-red-50/30 rounded-xl shadow-sm flex items-center justify-between gap-3';
+                card.className = 'dm-card-trash p-3.5 border rounded-xl shadow-sm flex items-center justify-between gap-3';
                 
                 card.innerHTML = `
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-semibold text-gray-600 truncate">${escapeHtml(item.title)}</p>
-                        <p class="text-xs text-gray-400">Excluído em ${item.deletedAt}</p>
+                        <p class="text-sm font-semibold truncate" style="color:var(--text-secondary)">${escapeHtml(item.title)}</p>
+                        <p class="text-xs" style="color:var(--text-muted)">Excluído em ${item.deletedAt}</p>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0">
                         <button onclick="restoreFromTrash('${item.id}')" class="px-3 py-1.5 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors cursor-pointer">Restaurar</button>
@@ -1332,17 +1333,17 @@
             container.innerHTML = '';
 
             if (task.subtasks.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium">Nenhum subitem ativo.</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-xs font-medium" style="color:var(--text-muted)">Nenhum subitem ativo.</div>`;
             } else {
                 task.subtasks.forEach(sub => {
                     const row = document.createElement('div');
-                    row.className = `flex items-center justify-between p-3 border border-gray-200 rounded-xl gap-2 select-none transition-colors cursor-grab active:cursor-grabbing ${sub.completed ? 'bg-gray-50 opacity-75' : 'bg-white hover:bg-amber-50'}`;
+                    row.className = `dm-subtask-row flex items-center justify-between p-3 border rounded-xl gap-2 select-none transition-colors cursor-grab active:cursor-grabbing ${sub.completed ? 'opacity-75' : ''}`;
                     row.dataset.id = sub.id; row.dataset.type = 'subtask';
 
                     row.innerHTML = `
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <input type="checkbox" ${sub.completed ? 'checked' : ''} onclick="toggleFullscreenSubtask('${task.id}', '${sub.id}')" class="w-4 h-4 rounded text-amber-500 accent-amber-500 cursor-pointer">
-                            <span class="text-xs font-semibold text-gray-700 break-words flex-1 min-w-0 editable-subfullscreen-txt ${sub.completed ? 'line-through text-gray-400 font-normal' : ''}">${escapeHtml(sub.title)}</span>
+                            <span class="text-xs font-semibold break-words flex-1 min-w-0 editable-subfullscreen-txt ${sub.completed ? 'line-through font-normal' : ''}" style="color:${sub.completed ? 'var(--text-muted)' : 'var(--text-primary)'}">${escapeHtml(sub.title)}</span>
                         </div>
                         <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
                             <button class="btn-edit-fs-pencil p-1 text-gray-400 hover:text-amber-600 cursor-pointer" title="Editar">
@@ -1368,8 +1369,8 @@
             
             if (task.trashSubtasks && task.trashSubtasks.length > 0) {
                 let trashItemsHtml = task.trashSubtasks.map(ts => `
-                    <div class="flex items-center justify-between p-2.5 border border-red-100 bg-red-50/30 rounded-xl gap-2">
-                        <span class="text-[11px] font-semibold text-gray-400 line-through truncate">${escapeHtml(ts.title)}</span>
+                    <div class="dm-card-trash flex items-center justify-between p-2.5 border rounded-xl gap-2">
+                        <span class="text-[11px] font-semibold line-through truncate" style="color:var(--text-muted)">${escapeHtml(ts.title)}</span>
                         <div class="flex gap-1.5 flex-shrink-0">
                             <button onclick="restoreFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-emerald-100 text-emerald-700 rounded cursor-pointer transition-colors hover:bg-emerald-200">Restaurar</button>
                             <button onclick="permDeleteFullscreenSubtask('${task.id}', '${ts.id}')" class="px-2 py-1 text-[9px] font-bold bg-red-100 text-red-600 rounded cursor-pointer transition-colors hover:bg-red-200">Deletar</button>
@@ -1378,8 +1379,8 @@
                 `).join('');
                 
                 trashWrapper.innerHTML = `
-                    <div class="mt-8 border-t border-gray-100 pt-4">
-                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Subitens Excluídos</h4>
+                    <div class="mt-8 pt-4" style="border-top:1px solid var(--border-section)">
+                        <h4 class="text-[10px] font-bold uppercase tracking-wider mb-3" style="color:var(--text-muted)">Subitens Excluídos</h4>
                         <div class="space-y-1.5">${trashItemsHtml}</div>
                     </div>
                 `;
