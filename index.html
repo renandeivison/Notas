@@ -87,6 +87,12 @@
             font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
             background: var(--bg-body);
             transition: background 0.3s;
+            /* Fix for mobile browsers (Android especially): 100vh doesn't account for
+               the system nav bar / address bar, so content ends up hidden behind it.
+               100dvh dynamically adjusts to the *real* visible area. Browsers that
+               don't understand dvh simply ignore this line and keep the vh fallback
+               set by the Tailwind h-screen class above. */
+            height: 100dvh;
         }
 
         /* App shell */
@@ -251,6 +257,69 @@
         #theme-icon-sun  { display: none; }
         html.dark #theme-icon-moon { display: none; }
         html.dark #theme-icon-sun  { display: block; }
+
+        /* ── Safe-area (notch / gesture bar) support ── */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+        /* ── Mobile bottom tab bar ── */
+        #mobile-tabbar {
+            background: #0f172a;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        #mobile-tabbar button.mtab-active { color: #f59e0b; }
+        #mobile-tabbar button.mtab-active .mtab-dot { opacity: 1; }
+        #mobile-tabbar button { color: #94a3b8; }
+        #mobile-tabbar .mtab-dot {
+            opacity: 0; width: 4px; height: 4px; border-radius: 999px; background: #f59e0b;
+            position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%);
+        }
+
+        /* Undo/redo bar: sits above the mobile tab bar; above the header on desktop */
+        #undo-redo-bar { bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 12px); }
+        @media (min-width: 768px) {
+            #undo-redo-bar { bottom: 1.5rem; }
+        }
+
+        /* Leave room at the bottom of scrollable lists so the tab bar never covers the last item */
+        @media (max-width: 767px) {
+            #tasks-scroll-container, #notes-scroll-container,
+            #section-trash .custom-scroll {
+                padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+            }
+        }
+
+        /* ── Mobile-only refinements ── */
+        @media (max-width: 767px) {
+            /* Bigger, easier-to-tap icon buttons (edit / delete / etc.) */
+            .btn-edit-pencil, .btn-edit-fs-pencil,
+            #tasks-container button, #fullscreen-subtasks-container button,
+            #notes-grid button, #trash-container button {
+                min-width: 40px; min-height: 40px;
+                display: inline-flex; align-items: center; justify-content: center;
+            }
+            /* Checkboxes a bit larger for thumb accuracy */
+            #tasks-container input[type="checkbox"],
+            #fullscreen-subtasks-container input[type="checkbox"] {
+                width: 20px; height: 20px;
+            }
+            /* Slightly bump up the tiniest label text for readability */
+            #tasks-container .text-\[10px\],
+            #tasks-container .text-\[9px\],
+            #tasks-container .text-\[11px\],
+            #notes-grid .text-\[10px\],
+            #notes-grid .text-\[11px\],
+            #fullscreen-subtasks-container .text-\[11px\],
+            #fullscreen-trash-subtasks-wrapper .text-\[9px\],
+            #fullscreen-trash-subtasks-wrapper .text-\[11px\] {
+                font-size: 12px;
+            }
+            /* Give list cards a bit more breathing room for touch */
+            #tasks-container.space-y-2\.5 > div,
+            #notes-grid.space-y-2\.5 > div {
+                margin-bottom: 0.5rem;
+            }
+        }
     </style>
 </head>
 <body class="w-screen h-screen flex items-center justify-center m-0 p-0 md:p-4 overflow-hidden select-none">
@@ -396,8 +465,11 @@
         <main id="main-area" class="flex-1 flex flex-col h-full overflow-hidden relative" style="background:var(--bg-main)">
             
             <div id="top-header" class="p-3 border-b shadow-sm flex-shrink-0 flex items-center justify-between gap-3 z-10" style="background:var(--bg-header);border-color:var(--border-header)">
-                <button id="btn-hamburger" onclick="toggleSidebar(true)" class="p-2 rounded-xl transition-colors cursor-pointer flex-shrink-0" style="color:var(--text-secondary)">
+                <button id="btn-hamburger" onclick="toggleSidebar(true)" class="hidden md:block p-2 rounded-xl transition-colors cursor-pointer flex-shrink-0" style="color:var(--text-secondary)">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <button id="btn-hamburger-mobile" onclick="toggleSidebar(true)" class="md:hidden p-2 rounded-xl transition-colors cursor-pointer flex-shrink-0" style="color:var(--text-secondary)">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg>
                 </button>
                 
                 <div class="relative flex-1 max-w-xl">
@@ -431,7 +503,7 @@
                 </div>
             </section>
 
-            <div id="undo-redo-bar" class="absolute bottom-20 right-4 md:bottom-6 md:right-6 z-30 flex items-center gap-1 backdrop-blur p-1.5 rounded-xl shadow-md pb-safe" style="background:var(--bg-undo);border:1px solid var(--border-undo)">
+            <div id="undo-redo-bar" class="absolute right-4 md:right-6 z-30 flex items-center gap-1 backdrop-blur p-1.5 rounded-xl shadow-md" style="background:var(--bg-undo);border:1px solid var(--border-undo)">
                 <button id="btn-undo" onclick="handleUndo()" class="p-2 rounded-lg transition-all cursor-pointer opacity-30 pointer-events-none" style="color:var(--text-label)" title="Desfazer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"></path></svg>
                 </button>
@@ -442,6 +514,28 @@
             </div>
 
         </main>
+
+        <nav id="mobile-tabbar" class="md:hidden absolute bottom-0 left-0 right-0 z-20 flex items-stretch">
+            <button id="mtab-tasks" onclick="switchTab('tasks')" class="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer">
+                <span class="mtab-dot"></span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                <span class="text-[10px] font-semibold">Tarefas</span>
+            </button>
+            <button id="mtab-notes" onclick="switchTab('notes')" class="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer">
+                <span class="mtab-dot"></span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                <span class="text-[10px] font-semibold">Notas</span>
+            </button>
+            <button id="mtab-trash" onclick="switchTab('trash')" class="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer">
+                <span class="mtab-dot"></span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <span class="text-[10px] font-semibold">Lixeira</span>
+            </button>
+            <button onclick="toggleSidebar(true)" class="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg>
+                <span class="text-[10px] font-semibold">Mais</span>
+            </button>
+        </nav>
     </div>
 
     <script>
@@ -589,6 +683,11 @@
             btnNotes.className = inactiveClass;
             btnTrash.className = inactiveClass;
 
+            const mtabTasks = document.getElementById('mtab-tasks');
+            const mtabNotes = document.getElementById('mtab-notes');
+            const mtabTrash = document.getElementById('mtab-trash');
+            [mtabTasks, mtabNotes, mtabTrash].forEach(b => b && b.classList.remove('mtab-active'));
+
             btnAction.className = "flex items-center gap-1.5 px-3.5 py-2.5 text-white font-bold text-xs rounded-xl shadow-sm transition-colors cursor-pointer flex-shrink-0";
             iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>`;
             
@@ -599,6 +698,7 @@
                 btnAction.classList.remove('bg-red-500', 'hover:bg-red-600');
                 searchInput.placeholder = "Pesquisar tarefas...";
                 btnTasks.className = activeClass;
+                if (mtabTasks) mtabTasks.classList.add('mtab-active');
             } else if (activeTab === 'notes') {
                 secNotes.classList.remove('hidden');
                 txtAction.innerText = "Nova Nota";
@@ -606,6 +706,7 @@
                 btnAction.classList.remove('bg-red-500', 'hover:bg-red-600');
                 searchInput.placeholder = "Pesquisar notas...";
                 btnNotes.className = activeClass;
+                if (mtabNotes) mtabNotes.classList.add('mtab-active');
             } else if (activeTab === 'trash') {
                 secTrash.classList.remove('hidden');
                 txtAction.innerText = "Limpar Lixeira";
@@ -614,6 +715,7 @@
                 iconAction.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>`;
                 searchInput.placeholder = "Pesquisar excluídos...";
                 btnTrash.className = activeClass;
+                if (mtabTrash) mtabTrash.classList.add('mtab-active');
             }
             
             updateHistoryButtons();
