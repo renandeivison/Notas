@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wundernotes-v3.7';
+const CACHE_NAME = 'Notas';
 const ASSETS = [
   './',
   './index.html',
