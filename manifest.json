@@ -1,7 +1,7 @@
 {
-  "name": "WunderNotes & Tasks",
-  "short_name": "WunderNotes",
-  "description": "Aplicativo de Notas e Tarefas Inteligente",
+  "name": "Notas",
+  "short_name": "Notas",
+  "description": "Aplicativo de notas simples",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
